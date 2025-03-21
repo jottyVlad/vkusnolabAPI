@@ -64,6 +64,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'users',
+    'chatAI',
+    'recipe'
 ]
 
 MIDDLEWARE = [
