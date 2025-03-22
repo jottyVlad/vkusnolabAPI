@@ -4,7 +4,7 @@ from baseAPI import settings
 
 
 class Recipe(models.Model):
-    autor_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    author_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=2000)
     instructions = models.TextField(max_length=100000)
