@@ -6,8 +6,7 @@ from baseAPI import settings
 
 class CustomUser(AbstractUser):
     bio = models.TextField(max_length=500, blank=True)
-    #TODO: разобраться что за путь к картинке
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    profile_picture = models.ImageField()
     registered_on = models.DateTimeField(auto_now_add=True)
 
 
