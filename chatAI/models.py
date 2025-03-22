@@ -1,5 +1,6 @@
 from django.db import models
-from django.conf import settings
+
+from baseAPI import settings
 
 class ChatHistory(models.Model):
     text = models.CharField(max_length=5000)
