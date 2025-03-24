@@ -11,13 +11,17 @@ class CustomUser(AbstractUser):
 
 
 class Followers(models.Model):
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='following')
-    author_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='followers')
+    user_id = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="following"
+    )
+    author_id = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="followers"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user_id', 'author_id'], name='unique_followers'
+                fields=["user_id", "author_id"], name="unique_followers"
             )
         ]

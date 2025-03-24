@@ -30,7 +30,7 @@ class RecipeIngredients(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['id_ingredient', 'id_recipe'], name='unique_ingredient_recipe'
+                fields=["id_ingredient", "id_recipe"], name="unique_ingredient_recipe"
             )
         ]
 
@@ -43,7 +43,7 @@ class Likes(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['recipe_id', 'user_id'], name='unique_likes_recipe'
+                fields=["recipe_id", "user_id"], name="unique_likes_recipe"
             )
         ]
 

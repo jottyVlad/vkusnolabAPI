@@ -4,4 +4,4 @@ from users import views
 
 router = DefaultRouter()
 
-router.register('', views.UserViewSet, basename='user_viewset')
+router.register("", views.UserViewSet, basename="user_viewset")

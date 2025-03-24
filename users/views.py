@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import UserRegistrationSerializer
 
+
 class UserViewSet(viewsets.ViewSet):
     permission_classes = (AllowAny,)
     serializer_class = UserRegistrationSerializer
@@ -18,9 +19,12 @@ class UserViewSet(viewsets.ViewSet):
 
             token = RefreshToken.for_user(serializer.instance)
 
-            return Response({
-                "message": "User registered successfully",
-                "access": str(token.access_token),
-                "refresh": str(token),
-            }, status=status.HTTP_201_CREATED)
+            return Response(
+                {
+                    "message": "User registered successfully",
+                    "access": str(token.access_token),
+                    "refresh": str(token),
+                },
+                status=status.HTTP_201_CREATED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
