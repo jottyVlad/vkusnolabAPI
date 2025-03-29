@@ -1,9 +1,4 @@
-from mongoengine import *
-
-class Cart(Document):
-    user_id = fields.StringField(required=True)
-    count_in_grams = fields.IntField()
-    ingredient_id = fields.StringField(required=True)
+from mongoengine import fields, Document
 
 class Views(Document):
     user_id = fields.StringField(required=True)
