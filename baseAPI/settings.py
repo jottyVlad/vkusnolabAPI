@@ -116,6 +116,19 @@ DATABASES = {
     }
 }
 
+# Подключение MongoDB
+MONGO_DB_NAME = 'mongodb'  # Имя вашей БД в MongoDB
+MONGO_URI = f'mongodb://localhost:27017/{MONGO_DB_NAME}'  # Для локальной MongoDB
+
+# Если используете MongoDB Atlas (облако), URI будет таким:
+# MONGO_URI = "mongodb+srv://username:password@cluster0.example.mongodb.net/mongodb?retryWrites=true&w=majority"
+
+mongoengine.connect(
+    db=MONGO_DB_NAME,
+    host=MONGO_URI,
+    alias='mongodb'
+)
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
