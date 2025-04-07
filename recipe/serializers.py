@@ -1,9 +1,9 @@
+"""Определяет в каком виде приходят и возвращаются данные от клиентов"""
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from recipe.models import Recipe, Ingredients, RecipeIngredients, Likes, SearchHistory, Comments
-
-User = get_user_model()
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -16,7 +16,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     - Автор обязателен
     """
     author = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
+        queryset=get_user_model().objects.all(),
         source='author_id',
         help_text="ID пользователя-автора рецепта"
     )
