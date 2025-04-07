@@ -49,6 +49,12 @@ class RecipeSerializer(serializers.ModelSerializer):
                 'default': False,
                 'help_text': "Приватный рецепт виден только автору"
             },
+            'servings': {
+                'min_value': 1,
+            },
+            'cooking_time_minutes': {
+                'min_value': 1,
+            }
         }
 
     def validate(self, data):
