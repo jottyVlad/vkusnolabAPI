@@ -10,6 +10,6 @@ router.register('recipe_ingredients', views.RecipeIngredientsViewSet, basename='
 
 router.register('likes', views.LikesViewSet, basename='likes_viewset')
 
-#router.register('search_history', views.SearchHistoryViewSet, basename='search_viewset')
+router.register('search_history', views.SearchHistoryViewSet, basename='search_viewset')
 
 router.register('comments', views.CommentsViewSet, basename='comments_viewset')
