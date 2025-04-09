@@ -10,7 +10,7 @@ class UserViewSet(viewsets.ViewSet):
     permission_classes = (AllowAny,)
     serializer_class = UserRegistrationSerializer
 
-    # @swagger_auto_schema(request_body=UserRegistrationSerializer)
+    @swagger_auto_schema(request_body=UserRegistrationSerializer)
     def create(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
