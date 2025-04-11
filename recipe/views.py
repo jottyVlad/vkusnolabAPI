@@ -15,6 +15,7 @@ API endpoints для работы с рецептами и связанными 
 
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -28,6 +29,12 @@ from .serializers import (
     SearchHistorySerializer,
     CommentsSerializer
 )
+
+
+class RecipePagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 50
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -47,6 +54,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = RecipePagination
 
     @swagger_auto_schema(
         operation_description="Создание нового рецепта",
