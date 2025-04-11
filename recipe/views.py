@@ -244,31 +244,15 @@ class CommentsViewSet(viewsets.ModelViewSet):
     - Оставлять новые комментарии
     - Удалять/редактировать свои комментарии
     """
-    queryset = Comments.objects.all()
     serializer_class = CommentsSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def perform_create(self, serializer):
-        """Автоматически назначает автора комментария"""
-        serializer.save(author_id=self.request.user)
-
-    @swagger_auto_schema(
-        operation_description="Создание нового комментария",
-        responses={
-            201: "Комментарий успешно создан",
-            400: "Неверные входные данные"
-        }
-    )
-    def create(self, request, *args, **kwargs):
-        """Создает новый комментарий к рецепту"""
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(author_id=request.user)
-
-        return Response(
-            {
-                "message": "Comment created successfully",
-                "data": serializer.data
-            },
-            status=status.HTTP_201_CREATED
-        )
+    def get_queryset(self):
+        """
+        Возвращает комментарии, фильтрованные по id рецепта.
+        Ожидает параметр 'recipe_id' в query-параметрах URL.
+        """
+        recipe_id = self.request.query_params.get('recipe_id')
+        if recipe_id is not None:
+            return Comments.objects.filter(recipe_id=recipe_id)
+        return Comments.objects.none()  # Или
