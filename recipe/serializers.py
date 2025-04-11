@@ -142,7 +142,6 @@ class LikesSerializer(serializers.ModelSerializer):
                 'help_text': "Автоматически устанавливается из запроса"
             },
             'recipe_id': {
-                'read_only': True,
                 'help_text': "ID рецепта, который лайкнули"
             },
             'created_at': {
