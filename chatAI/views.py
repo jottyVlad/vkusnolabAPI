@@ -43,7 +43,10 @@ class ChatHistoryViewSet(
         Возвращает только историю чатов текущего пользователя.
         Для анонимных пользователей возвращает пустой queryset.
         """
-        return self.queryset.filter(user_id=self.request.user)
+        user = self.request.user
+        if not user.is_authenticated:
+            return self.queryset.none()
+        return self.queryset.filter(user_id=user)
 
     def perform_create(self, serializer):
         """
