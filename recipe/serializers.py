@@ -25,7 +25,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = '__all__'
         extra_kwargs = {
-            'author_id': {'write_only': True},
+            'author_id': {'read_only': True},
             'title': {
                 'required': True,
                 'max_length': 100,
