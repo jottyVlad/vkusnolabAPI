@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-v6ysb5548vr5rtpknt3xiud+%5nfo)5i%^_2t75iu_g6@nq-h$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = ["http://localhost:8000",]
 
@@ -129,6 +129,10 @@ mongoengine.connect(
     alias='mongodb'
 )
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,  # сколько рецептов возвращать на одну страницу
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
