@@ -93,29 +93,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
-    def like(self, request, pk=None):
-        """
-        Добавляет или удаляет лайк рецепта.
-
-        Если лайк уже существует - удаляет его (анлайк),
-        если нет - создает новый лайк.
-        """
-        recipe = self.get_object()
-        user = request.user
-
-        like, created = Likes.objects.get_or_create(
-            recipe_id=recipe,
-            user_id=user
-        )
-
-        if not created:
-            like.delete()
-            return Response({"status": "unliked"})
-
-        return Response({"status": "liked"})
-
-
 class IngredientsViewSet(viewsets.ModelViewSet):
     """
     ViewSet для работы с ингредиентами.
