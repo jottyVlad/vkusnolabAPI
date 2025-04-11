@@ -7,7 +7,7 @@ API endpoints для работы с историей чатов.
 """
 
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -16,7 +16,11 @@ from .models import ChatHistory
 from .serializers import ChatHistorySerializer
 
 
-class ChatHistoryViewSet(viewsets.ModelViewSet):
+class ChatHistoryViewSet(
+    mixins.ListModelMixin,       # GET /chat_history/ (список)
+    mixins.CreateModelMixin,     # POST /chat_history/ (создание)
+    viewsets.GenericViewSet,     # Базовый класс
+    ):
     """
     ViewSet для работы с историей чатов пользователя.
 
