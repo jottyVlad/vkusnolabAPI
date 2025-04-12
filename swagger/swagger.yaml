@@ -1,0 +1,1226 @@
+swagger: '2.0'
+info:
+  title: API
+  description: ''
+  version: v1
+host: localhost:8000
+schemes:
+- http
+basePath: /api
+consumes:
+- application/json
+produces:
+- application/json
+securityDefinitions:
+  Basic:
+    type: basic
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+security:
+- Basic: []
+- Bearer: []
+paths:
+  /token/:
+    post:
+      operationId: token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/TokenObtainPair'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TokenObtainPair'
+      tags:
+      - token
+    parameters: []
+  /token/refresh/:
+    post:
+      operationId: token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/TokenRefresh'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TokenRefresh'
+      tags:
+      - token
+    parameters: []
+  /token/verify/:
+    post:
+      operationId: token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/TokenVerify'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TokenVerify'
+      tags:
+      - token
+    parameters: []
+  /v1/chat/chat_history/:
+    get:
+      operationId: v1_chat_chat_history_list
+      description: Получение истории чатов пользователя
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ChatHistory'
+        '403':
+          description: Доступ запрещен
+      tags:
+      - v1
+    post:
+      operationId: v1_chat_chat_history_create
+      description: Создание новой записи в истории чата
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/ChatHistory'
+      responses:
+        '201':
+          description: Запись успешно создана
+        '400':
+          description: Неверные входные данные
+        '403':
+          description: Доступ запрещен
+      tags:
+      - v1
+    parameters: []
+  /v1/chat/chat_history/ai_messages/:
+    get:
+      operationId: v1_chat_chat_history_ai_messages
+      description: |-
+        Возвращает только сообщения от ИИ (sender_type='AI')
+        для текущего пользователя.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ChatHistory'
+      tags:
+      - v1
+    parameters: []
+  /v1/chat/chat_history/clear_history/:
+    get:
+      operationId: v1_chat_chat_history_clear_history
+      description: Очищает всю историю чатов текущего пользователя.
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ChatHistory'
+      tags:
+      - v1
+    parameters: []
+  /v1/recipe/comments/:
+    get:
+      operationId: v1_recipe_comments_list
+      summary: ViewSet для работы с комментариями к рецептам.
+      description: |-
+        Позволяет:
+        - Просматривать комментарии
+        - Оставлять новые комментарии
+        - Удалять/редактировать свои комментарии
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Comments'
+      tags:
+      - v1
+    post:
+      operationId: v1_recipe_comments_create
+      summary: ViewSet для работы с комментариями к рецептам.
+      description: |-
+        Позволяет:
+        - Просматривать комментарии
+        - Оставлять новые комментарии
+        - Удалять/редактировать свои комментарии
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Comments'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Comments'
+      tags:
+      - v1
+    parameters: []
+  /v1/recipe/comments/{id}/:
+    get:
+      operationId: v1_recipe_comments_read
+      summary: ViewSet для работы с комментариями к рецептам.
+      description: |-
+        Позволяет:
+        - Просматривать комментарии
+        - Оставлять новые комментарии
+        - Удалять/редактировать свои комментарии
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Comments'
+      tags:
+      - v1
+    put:
+      operationId: v1_recipe_comments_update
+      summary: ViewSet для работы с комментариями к рецептам.
+      description: |-
+        Позволяет:
+        - Просматривать комментарии
+        - Оставлять новые комментарии
+        - Удалять/редактировать свои комментарии
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Comments'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Comments'
+      tags:
+      - v1
+    patch:
+      operationId: v1_recipe_comments_partial_update
+      summary: ViewSet для работы с комментариями к рецептам.
+      description: |-
+        Позволяет:
+        - Просматривать комментарии
+        - Оставлять новые комментарии
+        - Удалять/редактировать свои комментарии
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Comments'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Comments'
+      tags:
+      - v1
+    delete:
+      operationId: v1_recipe_comments_delete
+      summary: ViewSet для работы с комментариями к рецептам.
+      description: |-
+        Позволяет:
+        - Просматривать комментарии
+        - Оставлять новые комментарии
+        - Удалять/редактировать свои комментарии
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - v1
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: string
+  /v1/recipe/ingredients/:
+    get:
+      operationId: v1_recipe_ingredients_list
+      summary: ViewSet для работы с ингредиентами.
+      description: |-
+        Позволяет:
+        - Просматривать список всех ингредиентов
+        - Создавать новые ингредиенты
+        - Обновлять и удалять существующие
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Ingredients'
+      tags:
+      - v1
+    post:
+      operationId: v1_recipe_ingredients_create
+      description: Создание нового ингредиента
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Ingredients'
+      responses:
+        '201':
+          description: Ингредиент успешно создан
+        '400':
+          description: Неверные входные данные
+      tags:
+      - v1
+    parameters: []
+  /v1/recipe/ingredients/{id}/:
+    get:
+      operationId: v1_recipe_ingredients_read
+      summary: ViewSet для работы с ингредиентами.
+      description: |-
+        Позволяет:
+        - Просматривать список всех ингредиентов
+        - Создавать новые ингредиенты
+        - Обновлять и удалять существующие
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Ingredients'
+      tags:
+      - v1
+    put:
+      operationId: v1_recipe_ingredients_update
+      summary: ViewSet для работы с ингредиентами.
+      description: |-
+        Позволяет:
+        - Просматривать список всех ингредиентов
+        - Создавать новые ингредиенты
+        - Обновлять и удалять существующие
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Ingredients'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Ingredients'
+      tags:
+      - v1
+    patch:
+      operationId: v1_recipe_ingredients_partial_update
+      summary: ViewSet для работы с ингредиентами.
+      description: |-
+        Позволяет:
+        - Просматривать список всех ингредиентов
+        - Создавать новые ингредиенты
+        - Обновлять и удалять существующие
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Ingredients'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Ingredients'
+      tags:
+      - v1
+    delete:
+      operationId: v1_recipe_ingredients_delete
+      summary: ViewSet для работы с ингредиентами.
+      description: |-
+        Позволяет:
+        - Просматривать список всех ингредиентов
+        - Создавать новые ингредиенты
+        - Обновлять и удалять существующие
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - v1
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this ingredients.
+      required: true
+      type: integer
+  /v1/recipe/likes/:
+    get:
+      operationId: v1_recipe_likes_list
+      summary: ViewSet для работы с лайками рецептов.
+      description: |-
+        Позволяет:
+        - Просматривать свои лайки
+        - Создавать/удалять лайки
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Likes'
+      tags:
+      - v1
+    post:
+      operationId: v1_recipe_likes_create
+      summary: ViewSet для работы с лайками рецептов.
+      description: |-
+        Позволяет:
+        - Просматривать свои лайки
+        - Создавать/удалять лайки
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Likes'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Likes'
+      tags:
+      - v1
+    parameters: []
+  /v1/recipe/likes/{id}/:
+    get:
+      operationId: v1_recipe_likes_read
+      summary: ViewSet для работы с лайками рецептов.
+      description: |-
+        Позволяет:
+        - Просматривать свои лайки
+        - Создавать/удалять лайки
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Likes'
+      tags:
+      - v1
+    put:
+      operationId: v1_recipe_likes_update
+      summary: ViewSet для работы с лайками рецептов.
+      description: |-
+        Позволяет:
+        - Просматривать свои лайки
+        - Создавать/удалять лайки
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Likes'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Likes'
+      tags:
+      - v1
+    patch:
+      operationId: v1_recipe_likes_partial_update
+      summary: ViewSet для работы с лайками рецептов.
+      description: |-
+        Позволяет:
+        - Просматривать свои лайки
+        - Создавать/удалять лайки
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Likes'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Likes'
+      tags:
+      - v1
+    delete:
+      operationId: v1_recipe_likes_delete
+      summary: ViewSet для работы с лайками рецептов.
+      description: |-
+        Позволяет:
+        - Просматривать свои лайки
+        - Создавать/удалять лайки
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - v1
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this likes.
+      required: true
+      type: integer
+  /v1/recipe/recipe/:
+    get:
+      operationId: v1_recipe_recipe_list
+      summary: ViewSet для работы с рецептами.
+      description: |-
+        Поддерживает:
+        - Создание, чтение, обновление, удаление рецептов
+        - Добавление/удаление лайков
+        - Фильтрацию по автору и статусу
+
+        Права доступа:
+        - Чтение: доступно всем
+        - Запись: только аутентифицированным пользователям
+        - Изменение: только автор рецепта
+      parameters:
+      - name: page
+        in: query
+        description: A page number within the paginated result set.
+        required: false
+        type: integer
+      - name: page_size
+        in: query
+        description: Number of results to return per page.
+        required: false
+        type: integer
+      responses:
+        '200':
+          description: ''
+          schema:
+            required:
+            - count
+            - results
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: string
+                format: uri
+                x-nullable: true
+              previous:
+                type: string
+                format: uri
+                x-nullable: true
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/Recipe'
+      tags:
+      - v1
+    post:
+      operationId: v1_recipe_recipe_create
+      description: Создание нового рецепта
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Recipe'
+      responses:
+        '201':
+          description: Рецепт успешно создан
+        '400':
+          description: Неверные входные данные
+      tags:
+      - v1
+    parameters: []
+  /v1/recipe/recipe/{id}/:
+    get:
+      operationId: v1_recipe_recipe_read
+      summary: ViewSet для работы с рецептами.
+      description: |-
+        Поддерживает:
+        - Создание, чтение, обновление, удаление рецептов
+        - Добавление/удаление лайков
+        - Фильтрацию по автору и статусу
+
+        Права доступа:
+        - Чтение: доступно всем
+        - Запись: только аутентифицированным пользователям
+        - Изменение: только автор рецепта
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Recipe'
+      tags:
+      - v1
+    put:
+      operationId: v1_recipe_recipe_update
+      summary: ViewSet для работы с рецептами.
+      description: |-
+        Поддерживает:
+        - Создание, чтение, обновление, удаление рецептов
+        - Добавление/удаление лайков
+        - Фильтрацию по автору и статусу
+
+        Права доступа:
+        - Чтение: доступно всем
+        - Запись: только аутентифицированным пользователям
+        - Изменение: только автор рецепта
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Recipe'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Recipe'
+      tags:
+      - v1
+    patch:
+      operationId: v1_recipe_recipe_partial_update
+      description: Частичное обновление рецепта
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Recipe'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Recipe'
+        '400':
+          description: Неверные входные данные
+        '404':
+          description: Рецепт не найден
+      tags:
+      - v1
+    delete:
+      operationId: v1_recipe_recipe_delete
+      summary: ViewSet для работы с рецептами.
+      description: |-
+        Поддерживает:
+        - Создание, чтение, обновление, удаление рецептов
+        - Добавление/удаление лайков
+        - Фильтрацию по автору и статусу
+
+        Права доступа:
+        - Чтение: доступно всем
+        - Запись: только аутентифицированным пользователям
+        - Изменение: только автор рецепта
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - v1
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this recipe.
+      required: true
+      type: integer
+  /v1/recipe/recipe_ingredients/:
+    get:
+      operationId: v1_recipe_recipe_ingredients_list
+      summary: ViewSet для связи рецептов и ингредиентов.
+      description: |-
+        Позволяет:
+        - Добавлять ингредиенты в рецепты
+        - Указывать количество ингредиентов
+        - Управлять связями рецепт-ингредиент
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RecipeIngredients'
+      tags:
+      - v1
+    post:
+      operationId: v1_recipe_recipe_ingredients_create
+      description: Добавление ингредиента в рецепт
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/RecipeIngredients'
+      responses:
+        '201':
+          description: Ингредиент добавлен в рецепт
+        '400':
+          description: Неверные входные данные
+      tags:
+      - v1
+    parameters: []
+  /v1/recipe/recipe_ingredients/{id}/:
+    get:
+      operationId: v1_recipe_recipe_ingredients_read
+      summary: ViewSet для связи рецептов и ингредиентов.
+      description: |-
+        Позволяет:
+        - Добавлять ингредиенты в рецепты
+        - Указывать количество ингредиентов
+        - Управлять связями рецепт-ингредиент
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/RecipeIngredients'
+      tags:
+      - v1
+    put:
+      operationId: v1_recipe_recipe_ingredients_update
+      summary: ViewSet для связи рецептов и ингредиентов.
+      description: |-
+        Позволяет:
+        - Добавлять ингредиенты в рецепты
+        - Указывать количество ингредиентов
+        - Управлять связями рецепт-ингредиент
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/RecipeIngredients'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/RecipeIngredients'
+      tags:
+      - v1
+    patch:
+      operationId: v1_recipe_recipe_ingredients_partial_update
+      summary: ViewSet для связи рецептов и ингредиентов.
+      description: |-
+        Позволяет:
+        - Добавлять ингредиенты в рецепты
+        - Указывать количество ингредиентов
+        - Управлять связями рецепт-ингредиент
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/RecipeIngredients'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/RecipeIngredients'
+      tags:
+      - v1
+    delete:
+      operationId: v1_recipe_recipe_ingredients_delete
+      summary: ViewSet для связи рецептов и ингредиентов.
+      description: |-
+        Позволяет:
+        - Добавлять ингредиенты в рецепты
+        - Указывать количество ингредиентов
+        - Управлять связями рецепт-ингредиент
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - v1
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this recipe ingredients.
+      required: true
+      type: integer
+  /v1/recipe/search_history/:
+    get:
+      operationId: v1_recipe_search_history_list
+      summary: ViewSet для истории поиска пользователей.
+      description: |-
+        Позволяет:
+        - Просматривать свою историю поиска
+        - Создавать новые записи поиска
+        - Удалять историю
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SearchHistory'
+      tags:
+      - v1
+    post:
+      operationId: v1_recipe_search_history_create
+      summary: ViewSet для истории поиска пользователей.
+      description: |-
+        Позволяет:
+        - Просматривать свою историю поиска
+        - Создавать новые записи поиска
+        - Удалять историю
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SearchHistory'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/SearchHistory'
+      tags:
+      - v1
+    parameters: []
+  /v1/recipe/search_history/{id}/:
+    get:
+      operationId: v1_recipe_search_history_read
+      summary: ViewSet для истории поиска пользователей.
+      description: |-
+        Позволяет:
+        - Просматривать свою историю поиска
+        - Создавать новые записи поиска
+        - Удалять историю
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/SearchHistory'
+      tags:
+      - v1
+    put:
+      operationId: v1_recipe_search_history_update
+      summary: ViewSet для истории поиска пользователей.
+      description: |-
+        Позволяет:
+        - Просматривать свою историю поиска
+        - Создавать новые записи поиска
+        - Удалять историю
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SearchHistory'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/SearchHistory'
+      tags:
+      - v1
+    patch:
+      operationId: v1_recipe_search_history_partial_update
+      summary: ViewSet для истории поиска пользователей.
+      description: |-
+        Позволяет:
+        - Просматривать свою историю поиска
+        - Создавать новые записи поиска
+        - Удалять историю
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SearchHistory'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/SearchHistory'
+      tags:
+      - v1
+    delete:
+      operationId: v1_recipe_search_history_delete
+      summary: ViewSet для истории поиска пользователей.
+      description: |-
+        Позволяет:
+        - Просматривать свою историю поиска
+        - Создавать новые записи поиска
+        - Удалять историю
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+      - v1
+    parameters:
+    - name: id
+      in: path
+      description: A unique integer value identifying this search history.
+      required: true
+      type: integer
+  /v1/users/:
+    post:
+      operationId: v1_users_create
+      description: ''
+      parameters:
+      - name: data
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/UserRegistration'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/UserRegistration'
+      tags:
+      - v1
+    parameters: []
+  /v1/users/{id}/:
+    get:
+      operationId: v1_users_read
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+      - v1
+    parameters:
+    - name: id
+      in: path
+      required: true
+      type: string
+definitions:
+  TokenObtainPair:
+    required:
+    - username
+    - password
+    type: object
+    properties:
+      username:
+        title: Username
+        type: string
+        minLength: 1
+      password:
+        title: Password
+        type: string
+        minLength: 1
+  TokenRefresh:
+    required:
+    - refresh
+    type: object
+    properties:
+      refresh:
+        title: Refresh
+        type: string
+        minLength: 1
+      access:
+        title: Access
+        type: string
+        readOnly: true
+        minLength: 1
+  TokenVerify:
+    required:
+    - token
+    type: object
+    properties:
+      token:
+        title: Token
+        type: string
+        minLength: 1
+  ChatHistory:
+    required:
+    - user_id
+    - text
+    - sender_type
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      user_id:
+        title: User id
+        description: ID пользователя, связанного с историей чата
+        type: integer
+      text:
+        title: Text
+        description: Текст сообщения (максимум 5000 символов)
+        type: string
+        maxLength: 5000
+        minLength: 1
+      created_at:
+        title: Created at
+        description: Дата создания записи (автоматически устанавливается)
+        type: string
+        format: date-time
+        readOnly: true
+      sender_type:
+        title: Sender type
+        description: 'Тип отправителя: ''user'' или ''AI'''
+        type: string
+        maxLength: 5
+        minLength: 1
+  Comments:
+    required:
+    - comment_text
+    - recipe_id
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      created_at:
+        title: Created at
+        description: Дата создания комментария
+        type: string
+        format: date-time
+        readOnly: true
+      comment_text:
+        title: Comment text
+        description: Текст комментария (макс. 2000 символов)
+        type: string
+        maxLength: 2000
+        minLength: 1
+      recipe_id:
+        title: Recipe id
+        description: ID рецепта, к которому относится комментарий
+        type: integer
+      author_id:
+        title: Author id
+        description: Автоматически устанавливается из запроса
+        type: integer
+        readOnly: true
+  Ingredients:
+    required:
+    - name
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      name:
+        title: Name
+        description: Название ингредиента (макс. 100 символов)
+        type: string
+        maxLength: 100
+        minLength: 1
+  Likes:
+    required:
+    - recipe_id
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      created_at:
+        title: Created at
+        description: Дата создания лайка
+        type: string
+        format: date-time
+        readOnly: true
+      recipe_id:
+        title: Recipe id
+        description: ID рецепта, который лайкнули
+        type: integer
+      user_id:
+        title: User id
+        description: Автоматически устанавливается из запроса
+        type: integer
+        readOnly: true
+  Recipe:
+    required:
+    - author
+    - title
+    - description
+    - instructions
+    - cooking_time_minutes
+    - servings
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      author:
+        title: Author
+        description: ID пользователя-автора рецепта
+        type: integer
+      title:
+        title: Title
+        description: Название рецепта (макс. 100 символов)
+        type: string
+        maxLength: 100
+        minLength: 1
+      description:
+        title: Description
+        description: Краткое описание рецепта (макс. 2000 символов)
+        type: string
+        maxLength: 2000
+        minLength: 1
+      instructions:
+        title: Instructions
+        description: Пошаговые инструкции приготовления
+        type: string
+        maxLength: 100000
+        minLength: 1
+      cooking_time_minutes:
+        title: Cooking time minutes
+        type: integer
+        maximum: 9223372036854775807
+        minimum: 1
+      servings:
+        title: Servings
+        type: integer
+        maximum: 9223372036854775807
+        minimum: 1
+      image:
+        title: Image
+        type: string
+        readOnly: true
+        format: uri
+      created_at:
+        title: Created at
+        type: string
+        format: date-time
+        readOnly: true
+      updated_at:
+        title: Updated at
+        type: string
+        format: date-time
+        readOnly: true
+      is_active:
+        title: Is active
+        description: Флаг активности рецепта
+        type: boolean
+        default: true
+      is_private:
+        title: Is private
+        description: Приватный рецепт виден только автору
+        type: boolean
+        default: false
+      author_id:
+        title: Author id
+        type: integer
+        readOnly: true
+  RecipeIngredients:
+    required:
+    - id_ingredient
+    - id_recipe
+    - count_in_grams
+    - visible_type_of_count
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      id_ingredient:
+        title: Id ingredient
+        description: Название ингредиента
+        type: string
+      id_recipe:
+        title: Id recipe
+        description: ID связанного рецепта
+        type: integer
+      count_in_grams:
+        title: Count in grams
+        description: Количество в граммах (минимум 1)
+        type: integer
+        maximum: 9223372036854775807
+        minimum: 1
+      visible_type_of_count:
+        title: Visible type of count
+        description: Формат отображения количества
+        type: string
+        maxLength: 25
+        minLength: 1
+  SearchHistory:
+    required:
+    - text
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      text:
+        title: Text
+        description: Текст поискового запроса (макс. 100 символов)
+        type: string
+        maxLength: 100
+        minLength: 1
+      created_at:
+        title: Created at
+        description: Дата и время поискового запроса
+        type: string
+        format: date-time
+        readOnly: true
+      user_id:
+        title: User id
+        description: Автоматически устанавливается из запроса
+        type: integer
+        readOnly: true
+  UserRegistration:
+    required:
+    - username
+    - email
+    - password
+    type: object
+    properties:
+      username:
+        title: Username
+        description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          only.
+        type: string
+        pattern: ^[\w.@+-]+$
+        maxLength: 150
+        minLength: 1
+      email:
+        title: Email address
+        type: string
+        format: email
+        maxLength: 254
+      password:
+        title: Password
+        type: string
+        maxLength: 128
+        minLength: 1
