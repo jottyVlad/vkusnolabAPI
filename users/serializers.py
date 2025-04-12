@@ -1,9 +1,9 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from django.contrib.auth.models import User
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ['username', 'email', 'password']
         extra_kwargs = {
             'email': {'required': True},
@@ -11,15 +11,20 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs):
-        if User.objects.filter(email=attrs['email']).exists() or User.objects.filter(username=attrs['username']).exists():
+        if get_user_model().objects.filter(email=attrs['email']).exists() or get_user_model().objects.filter(username=attrs['username']).exists():
             raise serializers.ValidationError("This email or username is already in use.")
 
         return attrs
 
     def create(self, validated_data):
-        user = User.objects.create_user(
+        user = get_user_model().objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password']
         )
         return user
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ['username', 'email', 'password', 'bio', 'profile_picture']

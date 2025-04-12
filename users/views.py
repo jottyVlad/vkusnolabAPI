@@ -1,18 +1,21 @@
+from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import UserRegistrationSerializer
+from .models import CustomUser
+from .serializers import UserRegistrationSerializer, UserSerializer
 
-class UserViewSet(viewsets.ViewSet):
+
+class UserRegistrationViewSet(viewsets.ViewSet):
     permission_classes = (AllowAny,)
     serializer_class = UserRegistrationSerializer
 
     @swagger_auto_schema(request_body=UserRegistrationSerializer)
     def create(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
 
@@ -24,3 +27,14 @@ class UserViewSet(viewsets.ViewSet):
                 "refresh": str(token),
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated,]
+    queryset: CustomUser = get_user_model()
+    serializer_class = UserSerializer
+
+    def retrieve(self, request, pk):
+        user = self.queryset.objects.get(pk=pk)
+        serializer = self.serializer_class(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
