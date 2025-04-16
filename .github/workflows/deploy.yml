@@ -33,8 +33,9 @@ jobs:
       run: |
         cd ansible
         ansible-playbook -i inventory/production playbook.yml \
+          --extra-vars "ansible_host=${{ secrets.SERVER_IP }}" \
           --user ${{ secrets.SERVER_USER }} \
           --private-key ${{ secrets.SSH_PRIVATE_KEY_PATH }}
-          --extra-vars "ansible_host=${{ secrets.SERVER_IP }}" \
+
       env:
         ANSIBLE_HOST_KEY_CHECKING: False
