@@ -1,0 +1,5 @@
+[all]
+django_server ansible_host=${{ secrets.SERVER_IP }}
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
