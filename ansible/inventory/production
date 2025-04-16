@@ -1,0 +1,5 @@
+[all]
+django_server ansible_host=77.110.103.162
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
