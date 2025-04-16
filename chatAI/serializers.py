@@ -55,7 +55,7 @@ class ChatHistorySerializer(serializers.ModelSerializer):
         Raises: serializers.ValidationError: Если значение не 'user' или не 'AI'
         """
         allowed_values = ['user', 'AI']
-        if value not in allowed_values:
+        if value['sender_type'] not in allowed_values:
             raise serializers.ValidationError(
                 f"Тип отправителя должен быть одним из: {', '.join(allowed_values)}"
             )
