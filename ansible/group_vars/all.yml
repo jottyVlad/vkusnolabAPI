@@ -9,4 +9,4 @@ repo_url: "https://github.com/jottyVlad/vkusnolabAPI.git"
 git_branch: "ci/cd"  # Переопределяется в workflow
 requirements_file: "requirements.txt"
 python_version: "python3.12"
-ansible_host: "{{ server_ip }}"
+ansible_host: "{{ ansible_host }}"
