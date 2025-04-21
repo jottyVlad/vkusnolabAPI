@@ -14,7 +14,6 @@ class ChatHistorySerializer(serializers.ModelSerializer):
     - Связь с пользователем (user_id)
 
     Поля:
-    - user_id: обязательное поле (ID пользователя)
     - text: текст сообщения (макс. 5000 символов)
     - sender_type: тип отправителя ('user' или 'AI')
     - created_at: дата создания записи (только чтение)
@@ -28,13 +27,14 @@ class ChatHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatHistory
         fields = '__all__'
+        # exclude = ('user_id',)
         extra_kwargs = {
             'text': {
                 'max_length': 5000,
                 'help_text': "Текст сообщения (максимум 5000 символов)"
             },
             'user_id': {
-                'required': True,
+                'required': False,
                 'help_text': "Обязательное поле. ID пользователя"
             },
             'created_at': {
@@ -55,8 +55,17 @@ class ChatHistorySerializer(serializers.ModelSerializer):
         Raises: serializers.ValidationError: Если значение не 'user' или не 'AI'
         """
         allowed_values = ['user', 'AI']
-        if value not in allowed_values:
+        if value['sender_type'] not in allowed_values:
             raise serializers.ValidationError(
                 f"Тип отправителя должен быть одним из: {', '.join(allowed_values)}"
             )
         return value
+
+
+class MessageCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatHistory
+        exclude = ('user_id',)
+
+    def save(self, **kwargs):
+        raise NotImplementedError("You cannot use save method for this serializer")
