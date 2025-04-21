@@ -16,9 +16,9 @@ API endpoints для работы с рецептами и связанными 
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action
 
 from .models import Recipe, Likes, Ingredients, RecipeIngredients, SearchHistory, Comments
 from .serializers import (
@@ -55,9 +55,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = RecipePagination
+    parser_classes = [MultiPartParser, FormParser]
 
     @swagger_auto_schema(
         operation_description="Создание нового рецепта",
+        consumes=['multipart/form-data'],
         responses={
             201: "Рецепт успешно создан",
             400: "Неверные входные данные"
