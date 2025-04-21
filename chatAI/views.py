@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from .models import ChatHistory
-from .serializers import ChatHistorySerializer
+from .serializers import ChatHistorySerializer, MessageCreateSerializer
 
 
 class ChatHistoryViewSet(
@@ -49,11 +49,7 @@ class ChatHistoryViewSet(
         return self.queryset.filter(user_id=user)
 
     def perform_create(self, serializer):
-        """
-        Автоматически привязывает запись чата к текущему пользователю.
-        Проверяет корректность типа отправителя через сериализатор.
-        """
-        serializer.save(user_id=self.request.user)
+        serializer.save()
 
     @swagger_auto_schema(
         operation_description="Создание новой записи в истории чата",
@@ -61,7 +57,8 @@ class ChatHistoryViewSet(
             201: "Запись успешно создана",
             400: "Неверные входные данные",
             403: "Доступ запрещен"
-        }
+        },
+        request_body=MessageCreateSerializer
     )
     def create(self, request, *args, **kwargs):
         """
@@ -70,7 +67,12 @@ class ChatHistoryViewSet(
         - Текущего пользователя как владельца записи
         - Текущую дату и время
         """
-        serializer = self.get_serializer(data=request.data)
+
+        data = request.data
+        data.update({
+            "user_id": request.user.id
+        })
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
