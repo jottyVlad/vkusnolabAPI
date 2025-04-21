@@ -1,0 +1,29 @@
+---
+- name: Pull latest code
+  git:
+    repo: "{{ repo_url }}"
+    dest: "{{ app_dir }}"
+    version: "{{ git_branch }}"
+    accept_hostkey: yes
+    update: yes
+    force: yes
+
+- name: Install Python dependencies
+  pip:
+    requirements: "{{ app_dir }}/{{ requirements_file }}"
+    virtualenv: "{{ venv_dir }}"
+    virtualenv_python: python3.12
+
+- name: Run database migrations
+  command: "{{ venv_dir }}/bin/python manage.py migrate --noinput"
+  args:
+    chdir: "{{ app_dir }}"
+
+- name: Collect static files
+  command: "{{ venv_dir }}/bin/python manage.py collectstatic --noinput"
+  args:
+    chdir: "{{ app_dir }}"
+  when: collect_static | default(true)
+
+- name: Notify Gunicorn to restart
+  meta: flush_handlers
