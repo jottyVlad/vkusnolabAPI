@@ -10,7 +10,7 @@ class Recipe(models.Model):
     instructions = models.TextField(max_length=100000)
     cooking_time_minutes = models.IntegerField()
     servings = models.IntegerField()
-    image = models.ImageField()
+    image = models.ImageField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
