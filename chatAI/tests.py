@@ -44,8 +44,8 @@ class ChatHistoryAPITests(APITestCase):
         user_message.save()
 
 
-    def test_get_message_list(self):
-        """Тест получения списка сообщений"""
+    def test_get_code_200(self):
+        """Тест на получения кода 200"""
         response = self.client.get("/api/v1/chat/chat_history/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
