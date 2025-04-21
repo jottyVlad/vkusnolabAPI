@@ -21,6 +21,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from rest_framework.response import Response
 
 from .models import Recipe, Likes, Ingredients, RecipeIngredients, SearchHistory, Comments
+from .permissions import IsAuthorOrReadOnly
 from .serializers import (
     RecipeSerializer,
     IngredientsSerializer,
@@ -53,7 +54,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     pagination_class = RecipePagination
     parser_classes = [MultiPartParser, FormParser]
 
@@ -79,29 +80,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
         )
 
-    @swagger_auto_schema(
-        operation_description="Частичное обновление рецепта",
-        responses={
-            200: RecipeSerializer,
-            400: "Неверные входные данные",
-            404: "Рецепт не найден"
-        }
-    )
-    def partial_update(self, request, *args, **kwargs):
-        """Обновляет рецепт (только для автора)"""
-        instance = self.get_object()
-
-        if instance.author_id != request.user:
-            return Response(
-                {"message": "You can only edit your own recipes"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(serializer.data)
 
 class IngredientsViewSet(viewsets.ModelViewSet):
     """

@@ -50,8 +50,10 @@ class RecipeSerializer(serializers.ModelSerializer):
                 'min_value': 1,
             },
             'image': {
-                'help_text': "Изображение рецепта"
-            }
+                'help_text': "Изображение рецепта",
+                'required': False,
+                'allow_null': True
+            },
         }
 
     def validate(self, data):
@@ -65,7 +67,6 @@ class RecipeSerializer(serializers.ModelSerializer):
                 "servings": "Количество порций должно быть больше 0!"
             })
         return data
-
 
 class IngredientsSerializer(serializers.ModelSerializer):
     """
