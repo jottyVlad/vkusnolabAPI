@@ -1,7 +1,6 @@
 """Определяет в каком виде приходят и возвращаются данные от клиентов"""
 
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 
 from recipe.models import Recipe, Ingredients, RecipeIngredients, Likes, SearchHistory, Comments
 
@@ -15,11 +14,6 @@ class RecipeSerializer(serializers.ModelSerializer):
     - Количество порций должно быть > 0
     - Автор обязателен
     """
-    author = serializers.PrimaryKeyRelatedField(
-        queryset=get_user_model().objects.all(),
-        source='author_id',
-        help_text="ID пользователя-автора рецепта"
-    )
 
     class Meta:
         model = Recipe
@@ -54,6 +48,9 @@ class RecipeSerializer(serializers.ModelSerializer):
             },
             'cooking_time_minutes': {
                 'min_value': 1,
+            },
+            'image': {
+                'help_text': "Изображение рецепта"
             }
         }
 
