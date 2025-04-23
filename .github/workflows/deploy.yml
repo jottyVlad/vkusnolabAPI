@@ -1,0 +1,45 @@
+name: Deploy Django App
+
+on:
+  push:
+    branches: [ main, ci/cd ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Extract branch name
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: extract_branch
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install Ansible
+      run: pip install ansible
+
+    - name: Add SSH key
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Verify SSH connection
+      run: ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} echo "SSH connection successful"
+
+    - name: Run Ansible playbook
+      run: |
+        cd ansible
+        ansible-playbook -i inventory/production playbook.yml \
+          --extra-vars "git_branch=${{ steps.extract_branch.outputs.branch }} ansible_host=${{ secrets.SERVER_IP }}" \
+          --user ${{ secrets.SERVER_USER }} \
+          --private-key ${{ secrets.SSH_PRIVATE_KEY_PATH }}
+      env:
+        ANSIBLE_HOST_KEY_CHECKING: False

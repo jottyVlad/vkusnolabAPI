@@ -1,0 +1,12 @@
+---
+# Общие переменные
+app_name: "vkusnolabAPI"
+django_user: "django"
+django_group: "www-data"
+venv_dir: "/home/vkusnolabAPI/venv"
+app_dir: "/home/vkusnolabAPI/"
+repo_url: "https://github.com/jottyVlad/vkusnolabAPI.git"
+git_branch: "ci/cd"  # Переопределяется в workflow
+requirements_file: "requirements.txt"
+python_version: "python3.12"
+ansible_host: "{{ ansible_host }}"
