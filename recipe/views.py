@@ -61,7 +61,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         responses={
             201: "Рецепт успешно создан",
             400: "Неверные входные данные"
-        }
+        },
+        request_body=RecipeSerializer,
     )
     def create(self, request, *args, **kwargs):
         """Создает новый рецепт и автоматически назначает текущего пользователя автором"""

@@ -1,16 +1,18 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from baseAPI import settings
 
+User = get_user_model()
 
 class Recipe(models.Model):
-    author_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    author_id = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=2000)
     instructions = models.TextField(max_length=100000)
     cooking_time_minutes = models.IntegerField()
     servings = models.IntegerField()
-    image = models.ImageField()
+    image = models.ImageField(default=None, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)

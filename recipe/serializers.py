@@ -1,8 +1,8 @@
 """Определяет в каком виде приходят и возвращаются данные от клиентов"""
 
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 
+import users
 from recipe.models import Recipe, Ingredients, RecipeIngredients, Likes, SearchHistory, Comments
 
 
@@ -13,19 +13,18 @@ class RecipeSerializer(serializers.ModelSerializer):
     Обрабатывает создание и обновление рецептов. Включает валидацию:
     - Время готовки должно быть > 0
     - Количество порций должно быть > 0
-    - Автор обязателен
     """
-    author = serializers.PrimaryKeyRelatedField(
-        queryset=get_user_model().objects.all(),
-        source='author_id',
-        help_text="ID пользователя-автора рецепта"
-    )
+
+
+    author_id = users.serializers.UserProfileSerializer(read_only=True)
 
     class Meta:
         model = Recipe
-        fields = '__all__'
+        fields = ('title', 'description', 'instructions', 'cooking_time_minutes',
+                  'servings', 'image', 'is_active', 'is_private', 'created_at', 'updated_at',
+                  'author_id')
+        read_only_fields = ('created_at', 'updated_at',)
         extra_kwargs = {
-            'author_id': {'read_only': True},
             'title': {
                 'required': True,
                 'max_length': 100,
@@ -54,6 +53,10 @@ class RecipeSerializer(serializers.ModelSerializer):
             },
             'cooking_time_minutes': {
                 'min_value': 1,
+            },
+            'image': {
+                'required': False,
+                'help_text': 'Картинка для обложки рецепта'
             }
         }
 
