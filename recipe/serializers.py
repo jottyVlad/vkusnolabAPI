@@ -1,72 +1,72 @@
 """Определяет в каком виде приходят и возвращаются данные от клиентов"""
 
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 
-from recipe.models import Recipe, Ingredients, RecipeIngredients, Likes, SearchHistory, Comments
+import users
+from recipe.models import Recipe, Ingredient, RecipeIngredient, Like, SearchHistory, Comment
+from users.serializers import UserProfileSerializer
+
+
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    # Принимаем ingredient как ID (PrimaryKeyRelatedField)
+    ingredient = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
+        write_only=True  # Поле только для записи
+    )
+    count = serializers.FloatField()
+    visible_type_of_count = serializers.CharField()
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ['ingredient', 'count', 'visible_type_of_count']
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для модели Recipe.
-
-    Обрабатывает создание и обновление рецептов. Включает валидацию:
-    - Время готовки должно быть > 0
-    - Количество порций должно быть > 0
-    - Автор обязателен
-    """
-    author = serializers.PrimaryKeyRelatedField(
-        queryset=get_user_model().objects.all(),
-        source='author_id',
-        help_text="ID пользователя-автора рецепта"
-    )
+    ingredients = RecipeIngredientSerializer(many=True, required=True)
+    author = users.serializers.UserProfileSerializer(read_only=True)
 
     class Meta:
         model = Recipe
         fields = '__all__'
-        extra_kwargs = {
-            'author_id': {'read_only': True},
-            'title': {
-                'required': True,
-                'max_length': 100,
-                'help_text': "Название рецепта (макс. 100 символов)"
-            },
-            'description': {
-                'max_length': 2000,
-                'help_text': "Краткое описание рецепта (макс. 2000 символов)"
-            },
-            'instructions': {
-                'max_length': 100000,
-                'help_text': "Пошаговые инструкции приготовления"
-            },
-            'created_at': {'read_only': True},
-            'updated_at': {'read_only': True},
-            'is_active': {
-                'default': True,
-                'help_text': "Флаг активности рецепта"
-            },
-            'is_private': {
-                'default': False,
-                'help_text': "Приватный рецепт виден только автору"
-            },
-            'servings': {
-                'min_value': 1,
-            },
-            'cooking_time_minutes': {
-                'min_value': 1,
-            }
-        }
+        read_only_fields = ('author', 'created_at', 'updated_at')
 
-    def validate(self, data):
-        """Проверка валидности данных рецепта."""
-        if data.get('cooking_time_minutes', 0) <= 0:
-            raise serializers.ValidationError({
-                "cooking_time_minutes": "Время готовки должно быть больше 0!"
-            })
-        if data.get('servings', 0) <= 0:
-            raise serializers.ValidationError({
-                "servings": "Количество порций должно быть больше 0!"
-            })
+    def create(self, validated_data):
+        ingredients_data = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(**validated_data)
+
+        for ingredient_data in ingredients_data:
+            RecipeIngredient.objects.create(
+                recipe=recipe,
+                ingredient=ingredient_data['ingredient'],
+                count=ingredient_data['count'],
+                visible_type_of_count=ingredient_data['visible_type_of_count']
+            )
+
+        return recipe
+
+    def to_representation(self, instance: Recipe):
+        """Кастомное представление для вывода"""
+        data = dict()
+        data['id'] = instance.id
+        data['author'] = UserProfileSerializer(instance.author).data
+        data['ingredients'] = [
+            {
+                'ingredient': ri.ingredient.id,
+                'name': ri.ingredient.name,
+                'count': ri.count,
+                'visible_type_of_count': ri.visible_type_of_count
+            }
+            for ri in instance.recipeingredient_set.all()
+        ]
+        data['title'] = instance.title
+        data['description'] = instance.description
+        data['image'] = instance.image.url if instance.image else None
+        data['instructions'] = instance.instructions
+        data['servings'] = instance.servings
+        data['created_at'] = instance.created_at
+        data['updated_at'] = instance.updated_at
+        data['is_active'] = instance.is_active
+        data['is_private'] = instance.is_private
         return data
 
 
@@ -78,48 +78,13 @@ class IngredientsSerializer(serializers.ModelSerializer):
     """
 
     class Meta:
-        model = Ingredients
+        model = Ingredient
         fields = '__all__'
         extra_kwargs = {
             'name': {
                 'required': True,
                 'max_length': 100,
                 'help_text': "Название ингредиента (макс. 100 символов)"
-            }
-        }
-
-
-class RecipeIngredientsSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для связи рецептов и ингредиентов (RecipeIngredients).
-
-    Позволяет:
-    - Указывать количество ингредиента в граммах
-    - Задавать формат отображения количества
-    """
-    id_ingredient = serializers.SlugRelatedField(
-        slug_field='name',
-        queryset=Ingredients.objects.all(),
-        help_text="Название ингредиента"
-    )
-    id_recipe = serializers.PrimaryKeyRelatedField(
-        queryset=Recipe.objects.all(),
-        help_text="ID связанного рецепта"
-    )
-
-    class Meta:
-        model = RecipeIngredients
-        fields = '__all__'
-        extra_kwargs = {
-            'id_ingredient': {'required': True},
-            'id_recipe': {'required': True},
-            'count_in_grams': {
-                'min_value': 1,
-                'help_text': "Количество в граммах (минимум 1)"
-            },
-            'visible_type_of_count': {
-                'max_length': 25,
-                'help_text': "Формат отображения количества"
             }
         }
 
@@ -133,15 +98,14 @@ class LikesSerializer(serializers.ModelSerializer):
     - Текущую дату создания
     """
 
+    user = users.serializers.UserProfileSerializer(read_only=True)
+
     class Meta:
-        model = Likes
-        fields = '__all__'
+        model = Like
+        fields = ('recipe', 'created_at', 'user',)
+        read_only_fields = ('created_at',)
         extra_kwargs = {
-            'user_id': {
-                'read_only': True,
-                'help_text': "Автоматически устанавливается из запроса"
-            },
-            'recipe_id': {
+            'recipe': {
                 'help_text': "ID рецепта, который лайкнули"
             },
             'created_at': {
@@ -160,16 +124,14 @@ class CommentsSerializer(serializers.ModelSerializer):
     - Дата создания не редактируется
     - Текст комментария обязателен
     """
+    author = users.serializers.UserProfileSerializer(read_only=True)
 
     class Meta:
-        model = Comments
-        fields = '__all__'
+        model = Comment
+        fields = ('recipe', 'created_at', 'comment_text', 'author',)
+        read_only_fields = ('created_at',)
         extra_kwargs = {
-            'author_id': {
-                'read_only': True,
-                'help_text': "Автоматически устанавливается из запроса"
-            },
-            'recipe_id': {
+            'recipe': {
                 'required': True,
                 'help_text': "ID рецепта, к которому относится комментарий"
             },
@@ -194,14 +156,13 @@ class SearchHistorySerializer(serializers.ModelSerializer):
     - Текущую дату и время поиска
     """
 
+    user = users.serializers.UserProfileSerializer(read_only=True)
+
     class Meta:
         model = SearchHistory
-        fields = '__all__'
+        fields = ('created_at', 'text', 'user',)
+        read_only_fields = ('created_at',)
         extra_kwargs = {
-            'user_id': {
-                'read_only': True,
-                'help_text': "Автоматически устанавливается из запроса"
-            },
             'created_at': {
                 'read_only': True,
                 'help_text': "Дата и время поискового запроса"

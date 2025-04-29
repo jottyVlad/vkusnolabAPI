@@ -18,13 +18,12 @@ from rest_framework import viewsets, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action
 
-from .models import Recipe, Likes, Ingredients, RecipeIngredients, SearchHistory, Comments
+from .models import Recipe, Like, Ingredient, RecipeIngredient, SearchHistory, Comment
 from .serializers import (
     RecipeSerializer,
     IngredientsSerializer,
-    RecipeIngredientsSerializer,
+    RecipeIngredientSerializer,
     LikesSerializer,
     SearchHistorySerializer,
     CommentsSerializer
@@ -61,13 +60,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
         responses={
             201: "Рецепт успешно создан",
             400: "Неверные входные данные"
-        }
+        },
+        request_body=RecipeSerializer,
     )
     def create(self, request, *args, **kwargs):
         """Создает новый рецепт и автоматически назначает текущего пользователя автором"""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(author_id=request.user)
+        serializer.save(author=request.user)
 
         return Response(
             {
@@ -110,7 +110,7 @@ class IngredientsViewSet(viewsets.ModelViewSet):
     - Создавать новые ингредиенты
     - Обновлять и удалять существующие
     """
-    queryset = Ingredients.objects.all()
+    queryset = Ingredient.objects.all()
     serializer_class = IngredientsSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -145,8 +145,8 @@ class RecipeIngredientsViewSet(viewsets.ModelViewSet):
     - Указывать количество ингредиентов
     - Управлять связями рецепт-ингредиент
     """
-    queryset = RecipeIngredients.objects.all()
-    serializer_class = RecipeIngredientsSerializer
+    queryset = RecipeIngredient.objects.all()
+    serializer_class = RecipeIngredientSerializer
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
@@ -183,13 +183,22 @@ class LikesViewSet(viewsets.ModelViewSet):
     - Просматривать свои лайки
     - Создавать/удалять лайки
     """
-    queryset = Likes.objects.all()
+    queryset = Like.objects.all()
     serializer_class = LikesSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        """Автоматически привязывает лайк к текущему пользователю"""
-        serializer.save(user_id=self.request.user)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=request.user)
+
+        return Response(
+            {
+                "message": "Liked successfully",
+                "data": serializer.data
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 
 class SearchHistoryViewSet(viewsets.ModelViewSet):
@@ -208,16 +217,22 @@ class SearchHistoryViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Возвращает только историю поиска текущего пользователя.
-
-        Для анонимных пользователей возвращает пустой queryset.
         """
-        if hasattr(self.request.user, 'id'):
-            return self.queryset.filter(user_id=self.request.user.id)
-        return self.queryset.none()
+        if self.request.user.is_authenticated:
+            return self.queryset.filter(user=self.request.user.id)
 
-    def perform_create(self, serializer):
-        """Автоматически привязывает запись поиска к текущему пользователю"""
-        serializer.save(user_id=self.request.user)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=request.user)
+
+        return Response(
+            {
+                "message": "Liked successfully",
+                "data": serializer.data
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
@@ -231,13 +246,4 @@ class CommentsViewSet(viewsets.ModelViewSet):
     """
     serializer_class = CommentsSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get_queryset(self):
-        """
-        Возвращает комментарии, фильтрованные по id рецепта.
-        Ожидает параметр 'recipe_id' в query-параметрах URL.
-        """
-        recipe_id = self.request.query_params.get('recipe_id')
-        if recipe_id is not None:
-            return Comments.objects.filter(recipe_id=recipe_id)
-        return Comments.objects.none()  # Или
+    queryset = Comment.objects.all()
