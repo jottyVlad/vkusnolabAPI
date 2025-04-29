@@ -16,8 +16,10 @@ API endpoints для работы с рецептами и связанными 
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.utils import json
 
 from .models import Recipe, Like, Ingredient, RecipeIngredient, SearchHistory, Comment
 from .serializers import (
@@ -54,6 +56,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = RecipePagination
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     @swagger_auto_schema(
         operation_description="Создание нового рецепта",
@@ -65,7 +68,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def create(self, request, *args, **kwargs):
         """Создает новый рецепт и автоматически назначает текущего пользователя автором"""
-        serializer = self.get_serializer(data=request.data)
+        data = request.data
+        # data['ingredients'] = [RecipeIngredientSerializer(data=i) for i in json.loads(data.pop('ingredients')[0])]
+        serializer = self.get_serializer(data=data)
+        # print(request.data['ingredients'])
         serializer.is_valid(raise_exception=True)
         serializer.save(author=request.user)
 
