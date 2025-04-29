@@ -2,7 +2,7 @@ name: Deploy Django App
 
 on:
   push:
-    branches: [ main, ci/cd ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
