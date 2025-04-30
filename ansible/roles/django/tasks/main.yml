@@ -8,16 +8,23 @@
     update: yes
     force: yes
 
+- name: Create .env file
+  template:
+    src: .env.j2
+    dest: /home/vkusnolabAPI/.env
+    mode: '777'
+  no_log: true
+
 - name: Install Python dependencies
   pip:
     requirements: "{{ app_dir }}/{{ requirements_file }}"
     virtualenv: "{{ venv_dir }}"
     virtualenv_python: python3.12
 
-- name: Run database migrations
-  command: "{{ venv_dir }}/bin/python manage.py migrate --noinput"
-  args:
-    chdir: "{{ app_dir }}"
+#- name: Run database migrations
+#  command: "{{ venv_dir }}/bin/python manage.py migrate --noinput"
+#  args:
+#    chdir: "{{ app_dir }}"
 
 - name: Collect static files
   command: "{{ venv_dir }}/bin/python manage.py collectstatic --noinput"
