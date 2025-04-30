@@ -1,4 +1,5 @@
 """Определяет в каком виде приходят и возвращаются данные от клиентов"""
+import json
 
 from rest_framework import serializers
 
@@ -22,22 +23,37 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    ingredients = RecipeIngredientSerializer(many=True, required=True)
+    # ingredients = RecipeIngredientSerializer(many=True, required=True)
+    ingredients = serializers.JSONField(required=True)
     author = users.serializers.UserProfileSerializer(read_only=True)
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Recipe
         fields = '__all__'
         read_only_fields = ('author', 'created_at', 'updated_at')
 
+    # def validate_ingredients(self, value):
+    #     try:
+    #         # Пробуем распарсить JSON-строку
+    #         print(value)
+    #         ingredients = json.loads(value[0])
+    #         if not isinstance(ingredients, list):
+    #             raise serializers.ValidationError("Ingredients must be a list")
+    #         return ingredients
+    #     except json.JSONDecodeError:
+    #         raise serializers.ValidationError("Invalid JSON format for ingredients")
+
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
 
         for ingredient_data in ingredients_data:
+            ingredient = Ingredient.objects.get(id=ingredient_data['ingredient'])
+            # ingredient = RecipeIngredientSerializer(data=ingredient_data)
             RecipeIngredient.objects.create(
                 recipe=recipe,
-                ingredient=ingredient_data['ingredient'],
+                ingredient=ingredient,
                 count=ingredient_data['count'],
                 visible_type_of_count=ingredient_data['visible_type_of_count']
             )

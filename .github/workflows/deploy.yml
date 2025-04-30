@@ -39,7 +39,18 @@ jobs:
         cd ansible
         ansible-playbook -i inventory/production playbook.yml \
           --extra-vars "git_branch=${{ steps.extract_branch.outputs.branch }} ansible_host=${{ secrets.SERVER_IP }}" \
+          --extra-vars "database_name=${{ secrets.DATABASE_NAME }}" \
+          --extra-vars "database_user=${{ secrets.DATABASE_USER }}" \
+          --extra-vars "database_password=${{ secrets.DATABASE_PASSWORD }}" \
+          --extra-vars "django_secret_key=${{ secrets.DJANGO_SECRET_KEY }}" \
+          --extra-vars "s3_access_key_id=${{ secrets.S3_ACCESS_KEY_ID }}" \
+          --extra-vars "s3_secret_access_key=${{ secrets.S3_SECRET_ACCESS_KEY }}" \
+          --extra-vars "s3_bucket_name=${{ secrets.S3_BUCKET_NAME }}" \
+          --extra-vars "s3_endpoint_url=${{ secrets.S3_ENDPOINT_URL }}" \
+          --extra-vars "s3_custom_domain=${{ secrets.S3_CUSTOM_DOMAIN }}" \
           --user ${{ secrets.SERVER_USER }} \
-          --private-key ${{ secrets.SSH_PRIVATE_KEY_PATH }}
+          --private-key ${{ secrets.SSH_PRIVATE_KEY_PATH }} \
+
       env:
         ANSIBLE_HOST_KEY_CHECKING: False
+        ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
