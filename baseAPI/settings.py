@@ -12,17 +12,25 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from datetime import timedelta
 from pathlib import Path
+
+import dotenv
 import mongoengine
+from botocore.config import Config
+from storages.backends.s3 import S3Storage
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+if os.path.exists(os.path.join(BASE_DIR, ".env")):
+    dotenv.load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-v6ysb5548vr5rtpknt3xiud+%5nfo)5i%^_2t75iu_g6@nq-h$'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-v6ysb5548vr5rtpknt3xiud+%5nfo)5i%^_2t75iu_g6@nq-h$')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -67,7 +75,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'chatAI',
     'recipe',
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'storages',
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -120,9 +129,9 @@ WSGI_APPLICATION = 'baseAPI.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'vkusnolab',
-        'USER': 'djangouser',
-        'PASSWORD': 'Ckbwu8fGHu487fg478Vg48g3u4ig467geiuc',
+        'NAME': os.environ.get("DATABASE_NAME"),
+        'USER': os.environ.get("DATABASE_USER"),
+        'PASSWORD': os.environ.get("DATABASE_PASSWORD"),
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {
@@ -146,8 +155,11 @@ mongoengine.connect(
 )
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,  # сколько рецептов возвращать на одну страницу
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # 'PAGE_SIZE': 10,  # сколько рецептов возвращать на одну страницу
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
 }
 
 # Password validation
@@ -188,20 +200,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
-MEDIA_ROOT = "./mediafiles"
-MEDIA_URL = "media/"
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
-}
 
 SWAGGER_SETTINGS = {
    'SECURITY_DEFINITIONS': {
@@ -214,4 +216,28 @@ SWAGGER_SETTINGS = {
             'in': 'header'
       }
    }
+}
+
+# Настройки AWS S3
+AWS_ACCESS_KEY_ID = os.environ.get("S3_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("S3_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("S3_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = "ru-1"  # например, 'eu-west-1'
+AWS_S3_ENDPOINT_URL = os.environ.get("S3_ENDPOINT_URL")
+AWS_S3_CUSTOM_DOMAIN = os.environ.get("S3_CUSTOM_DOMAIN")
+AWS_DEFAULT_ACL = 'public-read'  # или 'private' для приватных файлов
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+MEDIA_ROOT = "./mediafiles"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "baseAPI.settings.S3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    }
 }
