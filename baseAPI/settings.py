@@ -241,3 +241,5 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     }
 }
+
+AI_TOKEN = os.environ.get("AI_TOKEN")
