@@ -21,3 +21,5 @@ s3_secret_access_key: "{{ s3_secret_access_key }}"
 s3_bucket_name: "{{ s3_bucket_name }}"
 s3_endpoint_url: "{{ s3_endpoint_url }}"
 s3_custom_domain: "{{ s3_custom_domain }}"
+
+ai_token: "{{ ai_token }}"

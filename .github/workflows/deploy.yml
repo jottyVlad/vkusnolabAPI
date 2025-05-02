@@ -48,6 +48,7 @@ jobs:
           --extra-vars "s3_bucket_name=${{ secrets.S3_BUCKET_NAME }}" \
           --extra-vars "s3_endpoint_url=${{ secrets.S3_ENDPOINT_URL }}" \
           --extra-vars "s3_custom_domain=${{ secrets.S3_CUSTOM_DOMAIN }}" \
+          --extra-vars "ai_token=${{ secrets.AI_TOKEN }}" \
           --user ${{ secrets.SERVER_USER }} \
           --private-key ${{ secrets.SSH_PRIVATE_KEY_PATH }} \
 
