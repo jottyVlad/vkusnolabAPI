@@ -15,6 +15,7 @@ API endpoints для работы с рецептами и связанными 
 
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -22,6 +23,7 @@ from rest_framework.response import Response
 from rest_framework.utils import json
 
 from .models import Recipe, Like, Ingredient, RecipeIngredient, SearchHistory, Comment
+from .permissions import IsAuthorOrReadOnly
 from .serializers import (
     RecipeSerializer,
     IngredientsSerializer,
@@ -54,9 +56,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     pagination_class = RecipePagination
     parser_classes = [JSONParser, MultiPartParser, FormParser]
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     @swagger_auto_schema(
         operation_description="Создание нового рецепта",
@@ -106,6 +109,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save()
 
         return Response(serializer.data)
+
+    def perform_destroy(self, instance):
+        if instance.author != self.request.user:
+            raise PermissionDenied("Вы не можете удалить чужой рецепт")
+        instance.delete()
 
 class IngredientsViewSet(viewsets.ModelViewSet):
     """
@@ -196,7 +204,7 @@ class LikesViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(author=request.user)
+        serializer.save()
 
         return Response(
             {
@@ -230,7 +238,7 @@ class SearchHistoryViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(author=request.user)
+        serializer.save(user=request.user)
 
         return Response(
             {
@@ -253,3 +261,11 @@ class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Comment.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def perform_destroy(self, instance):
+        if instance.author != self.request.user:
+            raise PermissionDenied("Вы не можете удалить чужой комментарий")
+        instance.delete()
