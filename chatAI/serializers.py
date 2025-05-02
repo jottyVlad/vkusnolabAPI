@@ -19,7 +19,7 @@ class ChatHistorySerializer(serializers.ModelSerializer):
     - created_at: дата создания записи (только чтение)
     """
     User = get_user_model()
-    user_id = serializers.PrimaryKeyRelatedField(
+    user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         help_text="ID пользователя, связанного с историей чата"
     )
@@ -27,15 +27,10 @@ class ChatHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatHistory
         fields = '__all__'
-        # exclude = ('user_id',)
         extra_kwargs = {
             'text': {
                 'max_length': 5000,
                 'help_text': "Текст сообщения (максимум 5000 символов)"
-            },
-            'user_id': {
-                'required': False,
-                'help_text': "Обязательное поле. ID пользователя"
             },
             'created_at': {
                 'read_only': True,
@@ -65,7 +60,7 @@ class ChatHistorySerializer(serializers.ModelSerializer):
 class MessageCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatHistory
-        exclude = ('user_id',)
+        exclude = ('user',)
 
     def save(self, **kwargs):
         raise NotImplementedError("You cannot use save method for this serializer")
