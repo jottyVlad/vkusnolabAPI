@@ -13,6 +13,7 @@ ansible_host: "{{ ansible_host }}"
 
 database_name: "{{ database_name }}"
 database_user: "{{ database_user }}"
+database_host: "{{ database_host }}"
 database_password: "{{ database_password }}"
 django_secret_key: "{{ django_secret_key }}"
 
