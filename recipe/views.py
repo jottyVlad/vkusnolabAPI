@@ -12,7 +12,7 @@ API endpoints для работы с рецептами и связанными 
 Все endpoints поддерживают стандартные CRUD операции
 и дополнительные кастомные действия.
 """
-
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.exceptions import PermissionDenied
@@ -261,6 +261,8 @@ class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = CommentsSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Comment.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['recipe__id']
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)

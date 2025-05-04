@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_filters',
     'corsheaders',
     'chatAI',
     'recipe',
@@ -159,7 +160,8 @@ REST_FRAMEWORK = {
     # 'PAGE_SIZE': 10,  # сколько рецептов возвращать на одну страницу
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
 # Password validation
