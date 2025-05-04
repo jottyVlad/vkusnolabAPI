@@ -2,6 +2,7 @@
 import json
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 import users
 from recipe.models import Recipe, Ingredient, RecipeIngredient, Like, SearchHistory, Comment
@@ -23,7 +24,6 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    # ingredients = RecipeIngredientSerializer(many=True, required=True)
     ingredients = serializers.JSONField(required=True)
     author = users.serializers.UserProfileSerializer(read_only=True)
     image = serializers.ImageField(required=False, allow_null=True)
@@ -33,16 +33,19 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('author', 'created_at', 'updated_at')
 
-    # def validate_ingredients(self, value):
-    #     try:
-    #         # Пробуем распарсить JSON-строку
-    #         print(value)
-    #         ingredients = json.loads(value[0])
-    #         if not isinstance(ingredients, list):
-    #             raise serializers.ValidationError("Ingredients must be a list")
-    #         return ingredients
-    #     except json.JSONDecodeError:
-    #         raise serializers.ValidationError("Invalid JSON format for ingredients")
+    def validate_ingredients(self, value):
+        if isinstance(value, dict):
+            return [value]
+        elif isinstance(value, list):
+            return value
+        elif isinstance(value, str):
+            try:
+                parsed = json.loads(value)
+                return [parsed] if isinstance(parsed, dict) else parsed
+            except json.JSONDecodeError:
+                raise serializers.ValidationError("Invalid JSON format for ingredients")
+        else:
+            raise serializers.ValidationError("Ingredients must be a list or a dictionary")
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
@@ -113,22 +116,23 @@ class LikesSerializer(serializers.ModelSerializer):
     - Пользователя из запроса
     - Текущую дату создания
     """
-
-    user = users.serializers.UserProfileSerializer(read_only=True)
+    user = serializers.PrimaryKeyRelatedField(read_only=True, default=serializers.CurrentUserDefault())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
 
     class Meta:
         model = Like
-        fields = ('recipe', 'created_at', 'user',)
-        read_only_fields = ('created_at',)
-        extra_kwargs = {
-            'recipe': {
-                'help_text': "ID рецепта, который лайкнули"
-            },
-            'created_at': {
-                'read_only': True,
-                'help_text': "Дата создания лайка"
-            },
-        }
+        fields = ('id', 'user', 'recipe')
+        read_only_fields = ('id', 'user')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Like.objects.all(),
+                fields=['user', 'recipe']
+            )
+        ]
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return Like.objects.create(**validated_data)
 
 
 class CommentsSerializer(serializers.ModelSerializer):

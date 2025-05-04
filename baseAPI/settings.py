@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_filters',
     'corsheaders',
     'chatAI',
     'recipe',
@@ -132,7 +133,7 @@ DATABASES = {
         'NAME': os.environ.get("DATABASE_NAME"),
         'USER': os.environ.get("DATABASE_USER"),
         'PASSWORD': os.environ.get("DATABASE_PASSWORD"),
-        'HOST': 'localhost',
+        'HOST': os.environ.get("DATABASE_HOST"),
         'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -159,7 +160,8 @@ REST_FRAMEWORK = {
     # 'PAGE_SIZE': 10,  # сколько рецептов возвращать на одну страницу
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
 # Password validation
