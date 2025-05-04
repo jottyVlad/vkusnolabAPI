@@ -21,7 +21,7 @@ class ChatHistoryAPITests(APITestCase):
 
         message = ChatHistory(
             text="Привет, пользователь!",
-            user_id=self.user,
+            user=self.user,
             created_at=timezone.now(),
             sender_type="AI"
         )
@@ -29,7 +29,7 @@ class ChatHistoryAPITests(APITestCase):
 
         another_message = ChatHistory(
             text="Привет, я ИИ!",
-            user_id=self.user,
+            user=self.user,
             created_at=timezone.now(),
             sender_type="AI"
         )
@@ -37,7 +37,7 @@ class ChatHistoryAPITests(APITestCase):
 
         user_message = ChatHistory(
             text="Приивееет",
-            user_id=self.user,
+            user=self.user,
             created_at=timezone.now(),
             sender_type="user"
         )
