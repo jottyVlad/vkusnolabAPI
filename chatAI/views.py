@@ -7,11 +7,14 @@ API endpoints для работы с историей чатов.
 """
 
 from drf_yasg.utils import swagger_auto_schema
+from langchain_gigachat.chat_models import GigaChat
+from langchain_core.messages import HumanMessage, SystemMessage
 from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from baseAPI.settings import AI_TOKEN
 from .models import ChatHistory
 from .serializers import ChatHistorySerializer, MessageCreateSerializer
 
@@ -37,6 +40,11 @@ class ChatHistoryViewSet(
     queryset = ChatHistory.objects.all()
     serializer_class = ChatHistorySerializer
     permission_classes = [IsAuthenticated]
+
+    ai_client = GigaChat(
+        credentials=AI_TOKEN,
+        verify_ssl_certs=False
+    )
 
     def get_queryset(self):
         """
@@ -70,15 +78,35 @@ class ChatHistoryViewSet(
 
         data = request.data
         data.update({
-            "user_id": request.user.id
+            "user": request.user.id
         })
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
+        messages = [
+            SystemMessage(
+                content="Ты бот, который придумывает рецепты. На любой запрос придумай рецепт"
+            ),
+            HumanMessage(
+                content=serializer.data["text"]
+            )
+        ]
+
+        response = self.ai_client.invoke(messages)
+        text = response.content
+
+        serializer_ai = self.get_serializer(data={
+            "text": text,
+            "user": request.user.id,
+            "sender_type": "AI"
+        })
+        serializer_ai.is_valid(raise_exception=True)
+        self.perform_create(serializer_ai)
+
         return Response(
             {
-                "message": "Chat message saved successfully",
+                "message": text,
                 "data": serializer.data
             },
             status=status.HTTP_201_CREATED
