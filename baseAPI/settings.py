@@ -132,7 +132,7 @@ DATABASES = {
         'NAME': os.environ.get("DATABASE_NAME"),
         'USER': os.environ.get("DATABASE_USER"),
         'PASSWORD': os.environ.get("DATABASE_PASSWORD"),
-        'HOST': 'localhost',
+        'HOST': os.environ.get("DATABASE_HOST"),
         'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -241,3 +241,5 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     }
 }
+
+AI_TOKEN = os.environ.get("AI_TOKEN")
