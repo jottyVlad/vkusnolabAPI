@@ -175,7 +175,6 @@ class SearchHistorySerializer(serializers.ModelSerializer):
     - Пользователя из запроса
     - Текущую дату и время поиска
     """
-
     user = users.serializers.UserProfileSerializer(read_only=True)
 
     class Meta:
