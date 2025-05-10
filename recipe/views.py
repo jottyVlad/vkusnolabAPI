@@ -20,8 +20,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.utils import json
 
+from .filters import RecipeFilter
 from .models import Recipe, Like, Ingredient, RecipeIngredient, SearchHistory, Comment
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
@@ -60,6 +60,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = RecipePagination
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     http_method_names = ['get', 'post', 'put', 'delete']
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
 
     @swagger_auto_schema(
         operation_description="Создание нового рецепта",
