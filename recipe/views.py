@@ -20,8 +20,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.utils import json
 
+from .filters import RecipeFilter
 from .models import Recipe, Like, Ingredient, RecipeIngredient, SearchHistory, Comment
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
@@ -60,6 +60,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = RecipePagination
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     http_method_names = ['get', 'post', 'put', 'delete']
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
 
     @swagger_auto_schema(
         operation_description="Создание нового рецепта",
@@ -115,6 +117,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Вы не можете удалить чужой рецепт")
         instance.delete()
 
+    def list(self, request, *args, **kwargs):
+        if request.user.is_authenticated and (text := request.query_params.get("search")):
+            last_search = SearchHistory.objects.filter(user__id=request.user.id).last()
+            if last_search is None or (last_search.text != text):
+                search = SearchHistory(text=text, user=request.user)
+                search.save()
+        return super().list(request, args, kwargs)
 class IngredientsViewSet(viewsets.ModelViewSet):
     """
     ViewSet для работы с ингредиентами.
@@ -233,7 +242,7 @@ class SearchHistoryViewSet(viewsets.ModelViewSet):
         Возвращает только историю поиска текущего пользователя.
         """
         if self.request.user.is_authenticated:
-            return self.queryset.filter(user=self.request.user.id)
+            return self.queryset.filter(user=self.request.user.id).order_by('-created_at')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
