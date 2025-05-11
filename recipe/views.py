@@ -242,7 +242,9 @@ class SearchHistoryViewSet(viewsets.ModelViewSet):
         Возвращает только историю поиска текущего пользователя.
         """
         if self.request.user.is_authenticated:
-            return self.queryset.filter(user=self.request.user.id).order_by('-created_at')
+            return (self.queryset
+                    .filter(user=self.request.user.id)
+                    .order_by('-created_at'))[:5]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
