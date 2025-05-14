@@ -58,9 +58,6 @@ class Comment(models.Model):
     comment_text = models.TextField(max_length=2000)
 
 
-from django.conf import settings
-from django.db import models
-
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     text_recipe_ingredient = models.TextField()
