@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 import users
-from recipe.models import Recipe, Ingredient, RecipeIngredient, Like, SearchHistory, Comment
+from recipe.models import Recipe, Ingredient, RecipeIngredient, Like, SearchHistory, Comment, Cart
 from users.serializers import UserProfileSerializer
 
 
@@ -193,3 +193,66 @@ class SearchHistorySerializer(serializers.ModelSerializer):
                 'help_text': "Текст поискового запроса (макс. 100 символов)"
             },
         }
+
+
+class CartWriteSerializer(serializers.ModelSerializer):
+    """Для записи — принимаем только recipe_ingredient ID, user подтянется сам."""
+    recipe_ingredient = serializers.PrimaryKeyRelatedField(
+        queryset=RecipeIngredient.objects.all()
+    )
+    user = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = Cart
+        fields = ('id', 'recipe_ingredient', 'user')
+        read_only_fields = ('id',)
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Cart.objects.all(),
+                fields=('user', 'recipe_ingredient'),
+                message="Уже есть в корзине"
+            )
+        ]
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
+
+class CartReadSerializer(serializers.ModelSerializer):
+    """Для чтения — разворачиваем рецепт и ингредиент из RecipeIngredient."""
+    recipe = serializers.SerializerMethodField()
+    ingredient = serializers.SerializerMethodField()
+    count = serializers.SerializerMethodField()
+    visible_type_of_count = serializers.SerializerMethodField()
+    user = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = (
+            'id',
+            'user',
+            'recipe',
+            'ingredient',
+            'count',
+            'visible_type_of_count',
+        )
+
+    def get_recipe(self, obj):
+        return obj.recipe_ingredient.recipe.id
+
+    def get_ingredient(self, obj):
+        ingr = obj.recipe_ingredient.ingredient
+        return {
+            'id': ingr.id,
+            'name': ingr.name
+        }
+
+    def get_count(self, obj):
+        return obj.recipe_ingredient.count
+
+    def get_visible_type_of_count(self, obj):
+        return obj.recipe_ingredient.visible_type_of_count

@@ -22,7 +22,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from rest_framework.response import Response
 
 from .filters import RecipeFilter
-from .models import Recipe, Like, Ingredient, RecipeIngredient, SearchHistory, Comment
+from .models import Recipe, Like, Ingredient, RecipeIngredient, SearchHistory, Comment, Cart
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
     RecipeSerializer,
@@ -30,7 +30,7 @@ from .serializers import (
     RecipeIngredientSerializer,
     LikesSerializer,
     SearchHistorySerializer,
-    CommentsSerializer
+    CommentsSerializer, CartReadSerializer, CartWriteSerializer
 )
 
 
@@ -280,3 +280,66 @@ class CommentsViewSet(viewsets.ModelViewSet):
         if instance.author != self.request.user:
             raise PermissionDenied("Вы не можете удалить чужой комментарий")
         instance.delete()
+
+
+class CartViewSet(viewsets.ModelViewSet):
+    """
+    Корзина: хранит ссылки на RecipeIngredient, но на list/retrieve
+    возвращает развёрнутые ингредиенты.
+    """
+    queryset = Cart.objects.all()
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = [
+        'recipe_ingredient__ingredient__id',
+        'recipe_ingredient__recipe__id'
+    ]
+
+    def get_queryset(self):
+        return Cart.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return CartReadSerializer
+        return CartWriteSerializer
+
+    @swagger_auto_schema(
+        responses={200: CartReadSerializer(many=True)}
+    )
+    def list(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        serializer = self.get_serializer(qs, many=True)
+        return Response({'data': serializer.data})
+
+    @swagger_auto_schema(
+        request_body=CartWriteSerializer,
+        responses={201: CartReadSerializer}
+    )
+    def create(self, request, *args, **kwargs):
+        write_ser = self.get_serializer(data=request.data, context={'request': request})
+        write_ser.is_valid(raise_exception=True)
+        cart_item = write_ser.save()
+        read_ser = CartReadSerializer(cart_item, context={'request': request})
+        return Response(
+            {'message': 'Добавлено в корзину', 'data': read_ser.data},
+            status=status.HTTP_201_CREATED
+        )
+
+    @swagger_auto_schema(
+        request_body=CartWriteSerializer,
+        responses={200: CartReadSerializer}
+    )
+    def update(self, request, *args, **kwargs):
+        inst = self.get_object()
+        write_ser = self.get_serializer(inst, data=request.data, context={'request': request})
+        write_ser.is_valid(raise_exception=True)
+        updated = write_ser.save()
+        read_ser = CartReadSerializer(updated, context={'request': request})
+        return Response({'data': read_ser.data})
+
+    @swagger_auto_schema(
+        responses={204: 'Удалено'}
+    )
+    def destroy(self, request, *args, **kwargs):
+        self.get_object().delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

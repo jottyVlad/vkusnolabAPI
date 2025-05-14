@@ -58,7 +58,20 @@ class Comment(models.Model):
     comment_text = models.TextField(max_length=2000)
 
 
+from django.conf import settings
+from django.db import models
+
 class Cart(models.Model):
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    count = models.FloatField()
+    recipe_ingredient = models.ForeignKey(RecipeIngredient, on_delete=models.CASCADE)
+    added_at = models.DateTimeField()
+
+    class Meta:
+        unique_together = ('user', 'recipe_ingredient')
+
+    # фига крутая штука
+    def __str__(self):
+        return (
+            f"{self.user} — {self.recipe_ingredient.ingredient.name} "
+            f"({self.recipe_ingredient.count} {self.recipe_ingredient.visible_type_of_count})"
+        )
