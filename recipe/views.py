@@ -284,16 +284,13 @@ class CommentsViewSet(viewsets.ModelViewSet):
 
 class CartViewSet(viewsets.ModelViewSet):
     """
-    Корзина: хранит ссылки на RecipeIngredient, но на list/retrieve
-    возвращает развёрнутые ингредиенты.
+    GET (list/retrieve) — возвращает все записи корзины текущего пользователя
+      без тела запроса.
+    POST/PUT/PATCH — CRUD по полю text_recipe_ingredient.
     """
-    queryset = Cart.objects.all()
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = [
-        'recipe_ingredient__ingredient__id',
-        'recipe_ingredient__recipe__id'
-    ]
+    filterset_fields = ['text_recipe_ingredient']
 
     def get_queryset(self):
         return Cart.objects.filter(user=self.request.user)
@@ -303,43 +300,79 @@ class CartViewSet(viewsets.ModelViewSet):
             return CartReadSerializer
         return CartWriteSerializer
 
+    def create(self, request, *args, **kwargs):
+        """
+        Принимает как одиночный объект, так и список объектов
+        ПРИМЕР!
+        [
+          {"text_recipe_ingredient": "400гр Мука"},
+          {"text_recipe_ingredient": "2шт Яйцо"}
+        ]
+        """
+        data = request.data
+        many = isinstance(data, list)
+        write_ser = CartWriteSerializer(
+            data=data,
+            many=many,
+            context={'request': request}
+        )
+        write_ser.is_valid(raise_exception=True)
+        items = write_ser.save()
+
+        # items — либо один объект, либо список
+        read_ser = CartReadSerializer(
+            items,
+            many=many,
+            context={'request': request}
+        )
+        return Response({'data': read_ser.data}, status=status.HTTP_201_CREATED)
+
+
     @swagger_auto_schema(
-        responses={200: CartReadSerializer(many=True)}
-    )
+        request_body=None,
+        responses={
+            200: CartReadSerializer(many=True)
+        })
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
-        serializer = self.get_serializer(qs, many=True)
-        return Response({'data': serializer.data})
+        ser = CartReadSerializer(qs, many=True, context={'request': request})
+        return Response({'data': ser.data})
+
 
     @swagger_auto_schema(
         request_body=CartWriteSerializer,
-        responses={201: CartReadSerializer}
-    )
-    def create(self, request, *args, **kwargs):
-        write_ser = self.get_serializer(data=request.data, context={'request': request})
-        write_ser.is_valid(raise_exception=True)
-        cart_item = write_ser.save()
-        read_ser = CartReadSerializer(cart_item, context={'request': request})
-        return Response(
-            {'message': 'Добавлено в корзину', 'data': read_ser.data},
-            status=status.HTTP_201_CREATED
-        )
-
-    @swagger_auto_schema(
-        request_body=CartWriteSerializer,
-        responses={200: CartReadSerializer}
-    )
+        responses={
+            200: CartReadSerializer
+        })
     def update(self, request, *args, **kwargs):
         inst = self.get_object()
         write_ser = self.get_serializer(inst, data=request.data, context={'request': request})
         write_ser.is_valid(raise_exception=True)
-        updated = write_ser.save()
-        read_ser = CartReadSerializer(updated, context={'request': request})
-        return Response({'data': read_ser.data})
+        item = write_ser.save()
+        read_ser = CartReadSerializer(item, context={'request': request})
+        return Response({'data': read_ser.data}, status=status.HTTP_200_OK)
+
 
     @swagger_auto_schema(
-        responses={204: 'Удалено'}
-    )
+        request_body=CartWriteSerializer,
+        responses={
+            200: CartReadSerializer
+        })
+    def partial_update(self, request, *args, **kwargs):
+        inst = self.get_object()
+        write_ser = self.get_serializer(inst, data=request.data, partial=True,
+                                        context={'request': request})
+        write_ser.is_valid(raise_exception=True)
+        item = write_ser.save()
+        read_ser = CartReadSerializer(item, context={'request': request})
+        return Response({'data': read_ser.data}, status=status.HTTP_200_OK)
+
+
+    @swagger_auto_schema(
+        request_body=None,
+        responses={
+            204: 'No Content'
+        })
     def destroy(self, request, *args, **kwargs):
         self.get_object().delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
