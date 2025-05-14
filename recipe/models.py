@@ -64,7 +64,6 @@ from django.db import models
 class Cart(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     recipe_ingredient = models.ForeignKey(RecipeIngredient, on_delete=models.CASCADE)
-    added_at = models.DateTimeField()
 
     class Meta:
         unique_together = ('user', 'recipe_ingredient')
