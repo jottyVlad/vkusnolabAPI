@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 import users
-from recipe.models import Recipe, Ingredient, RecipeIngredient, Like, SearchHistory, Comment
+from recipe.models import Recipe, Ingredient, RecipeIngredient, Like, SearchHistory, Comment, Cart
 from users.serializers import UserProfileSerializer
 
 
@@ -193,3 +193,40 @@ class SearchHistorySerializer(serializers.ModelSerializer):
                 'help_text': "Текст поискового запроса (макс. 100 символов)"
             },
         }
+
+
+class CartReadSerializer(serializers.ModelSerializer):
+    """
+    Только для GET: все поля read_only — swagger не будет требовать тело запроса.
+    """
+    user = UserProfileSerializer(read_only=True)
+    text_recipe_ingredient = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = ('id', 'user', 'text_recipe_ingredient')
+
+
+class CartWriteSerializer(serializers.ModelSerializer):
+    """
+    Для POST/PUT/PATCH: принимаем только text_recipe_ingredient,
+    user подставляем из request.
+    """
+    class Meta:
+        model = Cart
+        fields = ('text_recipe_ingredient',)
+        extra_kwargs = {
+            'text_recipe_ingredient': {'required': True}
+        }
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.text_recipe_ingredient = validated_data.get(
+            'text_recipe_ingredient',
+            instance.text_recipe_ingredient
+        )
+        instance.save()
+        return instance
