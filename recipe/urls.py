@@ -13,3 +13,5 @@ router.register('likes', views.LikesViewSet, basename='likes_viewset')
 router.register('search_history', views.SearchHistoryViewSet, basename='search_viewset')
 
 router.register('comments', views.CommentsViewSet, basename='comments_viewset')
+
+router.register('cart', views.CartViewSet, basename='cart_viewset')

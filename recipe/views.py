@@ -22,7 +22,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from rest_framework.response import Response
 
 from .filters import RecipeFilter
-from .models import Recipe, Like, Ingredient, RecipeIngredient, SearchHistory, Comment
+from .models import Recipe, Like, Ingredient, RecipeIngredient, SearchHistory, Comment, Cart
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (
     RecipeSerializer,
@@ -30,7 +30,7 @@ from .serializers import (
     RecipeIngredientSerializer,
     LikesSerializer,
     SearchHistorySerializer,
-    CommentsSerializer
+    CommentsSerializer, CartReadSerializer, CartWriteSerializer
 )
 
 
@@ -280,3 +280,99 @@ class CommentsViewSet(viewsets.ModelViewSet):
         if instance.author != self.request.user:
             raise PermissionDenied("Вы не можете удалить чужой комментарий")
         instance.delete()
+
+
+class CartViewSet(viewsets.ModelViewSet):
+    """
+    GET (list/retrieve) — возвращает все записи корзины текущего пользователя
+      без тела запроса.
+    POST/PUT/PATCH — CRUD по полю text_recipe_ingredient.
+    """
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['text_recipe_ingredient']
+
+    def get_queryset(self):
+        return Cart.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return CartReadSerializer
+        return CartWriteSerializer
+
+    def create(self, request, *args, **kwargs):
+        """
+        Принимает как одиночный объект, так и список объектов
+        ПРИМЕР!
+        [
+          {"text_recipe_ingredient": "400гр Мука"},
+          {"text_recipe_ingredient": "2шт Яйцо"}
+        ]
+        """
+        data = request.data
+        many = isinstance(data, list)
+        write_ser = CartWriteSerializer(
+            data=data,
+            many=many,
+            context={'request': request}
+        )
+        write_ser.is_valid(raise_exception=True)
+        items = write_ser.save()
+
+        # items — либо один объект, либо список
+        read_ser = CartReadSerializer(
+            items,
+            many=many,
+            context={'request': request}
+        )
+        return Response({'data': read_ser.data}, status=status.HTTP_201_CREATED)
+
+
+    @swagger_auto_schema(
+        request_body=None,
+        responses={
+            200: CartReadSerializer(many=True)
+        })
+    def list(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        ser = CartReadSerializer(qs, many=True, context={'request': request})
+        return Response({'data': ser.data})
+
+
+    @swagger_auto_schema(
+        request_body=CartWriteSerializer,
+        responses={
+            200: CartReadSerializer
+        })
+    def update(self, request, *args, **kwargs):
+        inst = self.get_object()
+        write_ser = self.get_serializer(inst, data=request.data, context={'request': request})
+        write_ser.is_valid(raise_exception=True)
+        item = write_ser.save()
+        read_ser = CartReadSerializer(item, context={'request': request})
+        return Response({'data': read_ser.data}, status=status.HTTP_200_OK)
+
+
+    @swagger_auto_schema(
+        request_body=CartWriteSerializer,
+        responses={
+            200: CartReadSerializer
+        })
+    def partial_update(self, request, *args, **kwargs):
+        inst = self.get_object()
+        write_ser = self.get_serializer(inst, data=request.data, partial=True,
+                                        context={'request': request})
+        write_ser.is_valid(raise_exception=True)
+        item = write_ser.save()
+        read_ser = CartReadSerializer(item, context={'request': request})
+        return Response({'data': read_ser.data}, status=status.HTTP_200_OK)
+
+
+    @swagger_auto_schema(
+        request_body=None,
+        responses={
+            204: 'No Content'
+        })
+    def destroy(self, request, *args, **kwargs):
+        self.get_object().delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
