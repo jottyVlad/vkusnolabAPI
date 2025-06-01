@@ -12,6 +12,8 @@ API endpoints для работы с рецептами и связанными 
 Все endpoints поддерживают стандартные CRUD операции
 и дополнительные кастомные действия.
 """
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
@@ -40,6 +42,7 @@ class RecipePagination(PageNumberPagination):
     max_page_size = 50
 
 
+@method_decorator(never_cache, name='dispatch')
 class RecipeViewSet(viewsets.ModelViewSet):
     """
     ViewSet для работы с рецептами.
@@ -124,6 +127,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 search = SearchHistory(text=text, user=request.user)
                 search.save()
         return super().list(request, args, kwargs)
+
+
+@method_decorator(never_cache, name='dispatch')
 class IngredientsViewSet(viewsets.ModelViewSet):
     """
     ViewSet для работы с ингредиентами.
@@ -159,6 +165,7 @@ class IngredientsViewSet(viewsets.ModelViewSet):
         )
 
 
+@method_decorator(never_cache, name='dispatch')
 class RecipeIngredientsViewSet(viewsets.ModelViewSet):
     """
     ViewSet для связи рецептов и ингредиентов.
@@ -198,6 +205,7 @@ class RecipeIngredientsViewSet(viewsets.ModelViewSet):
         )
 
 
+@method_decorator(never_cache, name='dispatch')
 class LikesViewSet(viewsets.ModelViewSet):
     """
     ViewSet для работы с лайками рецептов.
@@ -224,6 +232,7 @@ class LikesViewSet(viewsets.ModelViewSet):
         )
 
 
+@method_decorator(never_cache, name='dispatch')
 class SearchHistoryViewSet(viewsets.ModelViewSet):
     """
     ViewSet для истории поиска пользователей.
@@ -260,6 +269,7 @@ class SearchHistoryViewSet(viewsets.ModelViewSet):
         )
 
 
+@method_decorator(never_cache, name='dispatch')
 class CommentsViewSet(viewsets.ModelViewSet):
     """
     ViewSet для работы с комментариями к рецептам.
@@ -284,6 +294,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
         instance.delete()
 
 
+@method_decorator(never_cache, name='dispatch')
 class CartViewSet(viewsets.ModelViewSet):
     """
     GET (list/retrieve) — возвращает все записи корзины текущего пользователя

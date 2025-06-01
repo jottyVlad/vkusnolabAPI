@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -9,6 +11,7 @@ from .models import CustomUser
 from .serializers import UserRegistrationSerializer, UserSerializer
 
 
+@method_decorator(never_cache, name='dispatch')
 class UserRegistrationViewSet(viewsets.ViewSet):
     permission_classes = (AllowAny,)
     serializer_class = UserRegistrationSerializer
@@ -29,6 +32,7 @@ class UserRegistrationViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(never_cache, name='dispatch')
 class UserViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated,]
     queryset: CustomUser = get_user_model()

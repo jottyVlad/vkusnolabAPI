@@ -3,10 +3,13 @@ from rest_framework import status
 from rest_framework.generics import RetrieveUpdateAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 
 from .serializers import ProfileSerializer, PasswordChangeSerializer
 
 
+@method_decorator(never_cache, name='dispatch')
 class ProfileView(RetrieveUpdateAPIView):
     """
     View for retrieving and updating user profiles.
@@ -39,6 +42,7 @@ class ProfileView(RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@method_decorator(never_cache, name='dispatch')
 class ProfileByUsernameView(RetrieveAPIView):
     """
     View for retrieving user profiles by username.

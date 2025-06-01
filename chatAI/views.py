@@ -13,12 +13,15 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 
 from baseAPI.settings import AI_TOKEN
 from .models import ChatHistory
 from .serializers import ChatHistorySerializer, MessageCreateSerializer
 
 
+@method_decorator(never_cache, name='dispatch')
 class ChatHistoryViewSet(
     mixins.ListModelMixin,       # GET /chat_history/ (список)
     mixins.CreateModelMixin,     # POST /chat_history/ (создание)
