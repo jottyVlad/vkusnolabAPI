@@ -295,7 +295,10 @@ class CartViewSet(viewsets.ModelViewSet):
     filterset_fields = ['text_recipe_ingredient']
 
     def get_queryset(self):
-        return Cart.objects.filter(user=self.request.user)
+        if self.request.user.is_authenticated:
+            return Cart.objects.filter(user=self.request.user)
+        else:
+            return Cart.objects.none()
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):

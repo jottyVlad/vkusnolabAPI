@@ -1,5 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from recipe.models import Recipe, Ingredient, RecipeIngredient, Like, Comment, SearchHistory
@@ -379,6 +380,15 @@ class CommentCreateTest(APITestCase):
         }
         response = self.client.post(COMMENTS_LIST_URL, payload)
         self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+
+
+    def test_get_comments_of_recipe(self):
+        """Тест: Получение всех комментариев к одному рецепту"""
+        self.client.force_authenticate(user=self.user1)
+        response: Response = self.client.get(COMMENTS_LIST_URL + f"?recipe__id={self.recipe.id}") # noqa
+        print()
+        self.assertEqual(response.data[0]['recipe'], self.recipe.id)
+
 
 
 class SearchHistoryAPITests(APITestCase):

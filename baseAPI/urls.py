@@ -23,6 +23,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenVerifyView,
 from users.urls import router as user_router
 from recipe.urls import router as recipe_router
 from chatAI.urls import router as chatai_router
+from profiles.urls import urlpatterns as profiles_router
 
 
 schema_view = get_schema_view(
@@ -44,6 +45,7 @@ urlpatterns = [
     path('api/v1/users/', include(user_router.urls)),
     path('api/v1/recipe/', include(recipe_router.urls)),
     path('api/v1/chat/', include(chatai_router.urls)),
+    path('api/v1/profiles/', include(profiles_router)),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
