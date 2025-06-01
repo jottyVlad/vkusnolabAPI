@@ -95,7 +95,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-mongoengine.connect(db="mongoDB", host="mongodb://localhost:27017/")
 
 ROOT_URLCONF = 'baseAPI.urls'
 
@@ -257,7 +256,7 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ''
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": f"redis://{os.environ.get("DATABASE_HOST")}:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
