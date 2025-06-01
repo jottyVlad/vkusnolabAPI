@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from recipe.models import Recipe, Ingredient, RecipeIngredient, Like, Comment, SearchHistory
+from django.core.cache import cache
 
 User = get_user_model()
 
@@ -402,6 +403,9 @@ class SearchHistoryAPITests(APITestCase):
         SearchHistory.objects.create(user=self.user1, text='суп')
         SearchHistory.objects.create(user=self.user2, text='салат')
 
+    def tearDown(self):
+        cache.clear()
+
     def test_create_search_history_success(self):
         """Тест успешного создания записи истории поиска"""
         payload = {'text': 'блины'}
@@ -431,6 +435,9 @@ class SearchHistoryAPITests(APITestCase):
 
     def test_unauthenticated_user_cannot_create_or_list_history(self):
         """Тест: неаутентифицированный пользователь не может работать с историей"""
+        # Clear any existing cache before testing
+        cache.clear()
+        
         self.client.force_authenticate(user=None)
 
         payload = {'text': 'анонимный поиск'}
