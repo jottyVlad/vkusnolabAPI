@@ -1,7 +1,11 @@
-from recipe import views
-from recipe.utils import CacheRouter
+from rest_framework.routers import DefaultRouter
 
-router = CacheRouter()
+from recipe import views
+# from recipe.utils import CacheRouter
+
+# router = CacheRouter()
+router = DefaultRouter()
+
 
 router.register('recipe', views.RecipeViewSet, basename='recipe_viewset')
 router.register('ingredients', views.IngredientsViewSet, basename='ingredient_viewset')
