@@ -230,3 +230,24 @@ class CartWriteSerializer(serializers.ModelSerializer):
         )
         instance.save()
         return instance
+
+
+class RecipeWithoutAuthorSerializer(serializers.ModelSerializer):
+    ingredients = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = Recipe
+        fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at')
+
+    def get_ingredients(self, obj):
+        return [
+            {
+                'ingredient': ri.ingredient.id,
+                'name': ri.ingredient.name,
+                'count': ri.count,
+                'visible_type_of_count': ri.visible_type_of_count
+            }
+            for ri in obj.recipeingredient_set.all()
+        ]
