@@ -2,12 +2,14 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITestCase
+from django.core.cache import cache
 from chatAI.models import ChatHistory
 from users.models import CustomUser
 
 
 class ChatHistoryAPITests(APITestCase):
     def setUp(self):
+        cache.clear()
         self.user = CustomUser.objects.create_user(
             username='test',
             email='test@example.com',
@@ -43,6 +45,8 @@ class ChatHistoryAPITests(APITestCase):
         )
         user_message.save()
 
+    def tearDown(self):
+        cache.clear()
 
     def test_get_code_200(self):
         """Тест на получения кода 200"""
@@ -68,7 +72,6 @@ class ChatHistoryAPITests(APITestCase):
 
         self.assertEqual(ChatHistory.objects.filter(text=data["text"]).count(), 1)
 
-
     def test_get_message_ai(self):
         """Тест получения списка сообщений от AI"""
         response = self.client.get("/api/v1/chat/chat_history/ai_messages/")
@@ -76,8 +79,9 @@ class ChatHistoryAPITests(APITestCase):
         self.assertEqual(ChatHistory.objects.count(), 3)
         self.assertEqual(len(response.data), 2)
 
-
     def test_clear_history(self):
+        """Тест очистки истории чатов"""
+        cache.clear()  # Clear cache before testing
         response = self.client.get("/api/v1/chat/chat_history/clear_history/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(ChatHistory.objects.count(), 0)
